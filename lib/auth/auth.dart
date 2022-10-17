@@ -8,11 +8,11 @@ class Auth {
   final FirebaseAuth auth = FirebaseAuth.instance;
 
   // SIGN UP METHOD
-  Future<User> handleSignUp(
+  Future handleSignUp(
       String email, String password, BuildContext context) async {
     final isValid = formKey.currentState!.validate();
     if (!isValid) {
-      return null!;
+      return;
     }
 
     showDialog(
@@ -23,22 +23,23 @@ class Auth {
       ),
     );
 
+    try {
+      await auth.createUserWithEmailAndPassword(
+          email: email, password: password);
+    } on FirebaseAuthException catch (e) {
+      print(e);
+    }
+
     navigatorKey.currentState!.popUntil((route) => route.isFirst);
-
-    UserCredential result = await auth.createUserWithEmailAndPassword(
-        email: email, password: password);
-    final User user = result.user!;
-    print('signup');
-
-    return user;
+    print("signup");
   }
 
 // SIGN IN MEHTOD
-  Future<User> handleSignInEmail(
+  Future handleSignInEmail(
       String email, String password, BuildContext context) async {
     final isValid = formKey.currentState!.validate();
     if (!isValid) {
-      return null!;
+      return;
     }
 
     showDialog(
@@ -49,19 +50,23 @@ class Auth {
       ),
     );
 
+    try {
+      await auth.signInWithEmailAndPassword(email: email, password: password);
+    } on FirebaseAuthException catch (e) {
+      print(e);
+    }
+
     navigatorKey.currentState!.popUntil((route) => route.isFirst);
-
-    UserCredential result =
-        await auth.signInWithEmailAndPassword(email: email, password: password);
-    final User user = result.user!;
-    print('signin');
-
-    return user;
+    print("singin");
   }
 
   //SIGN OUT METHOD
   Future signOut() async {
-    await auth.signOut();
+    try {
+      await auth.signOut();
+    } on FirebaseAuthException catch (e) {
+      print(e);
+    }
     print('signout');
   }
 }

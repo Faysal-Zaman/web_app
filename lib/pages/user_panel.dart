@@ -75,18 +75,6 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
     });
   }
 
-  // var attendenceReference = FirebaseFirestore.instance
-  //     .collection("Attendence")
-  //     .doc(FirebaseAuth.instance.currentUser!.uid)
-  //     .collection(DateFormat.yMMMd().format(DateTime.now()).toString())
-  //     .doc();
-
-  // var taskReference = FirebaseFirestore.instance
-  //     .collection("Task")
-  //     .doc(FirebaseAuth.instance.currentUser!.email.toString())
-  //     .collection(DateFormat.MMM().format(DateTime.now()).toString())
-  //     .doc(FirebaseAuth.instance.currentUser!.uid.toString());
-
   //DateFormat.yMMMd().format(DateTime.now()).toString()
 
   Future<void> addInTimeToFireStore() async {
@@ -120,21 +108,6 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
 
     setAttendence.update(user);
   }
-
-  // Future<void> addTaskToFireStore() async {
-  //   await taskReference
-  //       .set({
-  //         'email': userInfo.email.toString(),
-  //         'date': todaysDate,
-  //         'user_id': userInfo.uid.toString(),
-  //         'task_name': '???',
-  //         'task_startTime': taskStaringTime,
-  //         'task_endTime': taskEndingTime,
-  //         'task_progress': _selectedLocation,
-  //       })
-  //       .then((value) => print("Information Added"))
-  //       .catchError((error) => print("Failed to add Information: $error"));
-  // }
 
   bool attSubmit = false;
 
@@ -448,7 +421,7 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
                                       return const Center(
-                                          child: Text("loading"));
+                                          child: CircularProgressIndicator());
                                     }
 
                                     return ListView.builder(
