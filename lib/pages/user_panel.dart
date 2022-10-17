@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -74,67 +75,91 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
     });
   }
 
-  var attendenceReference = FirebaseFirestore.instance
-      .collection("Attendence")
-      .doc(FirebaseAuth.instance.currentUser!.email.toString())
-      .collection(DateFormat.yMMMd().format(DateTime.now()).toString())
-      .doc(FirebaseAuth.instance.currentUser!.uid.toString());
+  // var attendenceReference = FirebaseFirestore.instance
+  //     .collection("Attendence")
+  //     .doc(FirebaseAuth.instance.currentUser!.uid)
+  //     .collection(DateFormat.yMMMd().format(DateTime.now()).toString())
+  //     .doc();
 
-  var taskReference = FirebaseFirestore.instance
-      .collection("Task")
-      .doc(FirebaseAuth.instance.currentUser!.email.toString())
-      .collection(DateFormat.yMMMd().format(DateTime.now()).toString())
-      .doc(FirebaseAuth.instance.currentUser!.uid.toString());
+  // var taskReference = FirebaseFirestore.instance
+  //     .collection("Task")
+  //     .doc(FirebaseAuth.instance.currentUser!.email.toString())
+  //     .collection(DateFormat.MMM().format(DateTime.now()).toString())
+  //     .doc(FirebaseAuth.instance.currentUser!.uid.toString());
 
   //DateFormat.yMMMd().format(DateTime.now()).toString()
 
-  Future<void> addAttendenceToFireStore() async {
-    await attendenceReference
-        .set({
-          'email': userInfo.email.toString(),
-          'date': DateFormat.yMMMd().format(DateTime.now()).toString(),
-          'user_id': userInfo.uid.toString(),
-          'attendence_inTime': attendenceInTime,
-          'attendence_outTime': attendenceOutTime,
-        })
-        .then((value) => print("Information Added"))
-        .catchError((error) => print("Failed to add Information: $error"));
+  Future<void> addInTimeToFireStore() async {
+    final setAttendence = FirebaseFirestore.instance
+        .collection("Attendence")
+        .doc(FirebaseAuth.instance.currentUser!.email)
+        .collection(DateFormat.MMM().format(DateTime.now()).toString())
+        .doc(DateFormat.d().format(DateTime.now()).toString());
+
+    final user = {
+      'email': userInfo.email.toString(),
+      'date': DateFormat.yMMMd().format(DateTime.now()).toString(),
+      'user_id': userInfo.uid.toString(),
+      'attendence_inTime': attendenceInTime,
+      'attendence_outTime': attendenceOutTime,
+    };
+
+    setAttendence.set(user);
   }
 
-  Future<void> addTaskToFireStore() async {
-    await taskReference
-        .set({
-          'email': userInfo.email.toString(),
-          'date': todaysDate,
-          'user_id': userInfo.uid.toString(),
-          'task_name': '???',
-          'task_startTime': taskStaringTime,
-          'task_endTime': taskEndingTime,
-          'task_progress': _selectedLocation,
-        })
-        .then((value) => print("Information Added"))
-        .catchError((error) => print("Failed to add Information: $error"));
+  Future<void> addOutTimeToFireStore() async {
+    final setAttendence = FirebaseFirestore.instance
+        .collection("Attendence")
+        .doc(FirebaseAuth.instance.currentUser!.email)
+        .collection(DateFormat.MMM().format(DateTime.now()).toString())
+        .doc(DateFormat.d().format(DateTime.now()).toString());
+
+    final user = {
+      'attendence_outTime': attendenceOutTime,
+    };
+
+    setAttendence.update(user);
   }
 
-  Stream attendenceStream = FirebaseFirestore.instance
-      .collection("Attendence")
-      .doc(FirebaseAuth.instance.currentUser!.email.toString())
-      .collection(DateFormat.yMMMd().format(DateTime.now()).toString())
-      .doc(FirebaseAuth.instance.currentUser!.uid.toString())
-      .snapshots();
+  // Future<void> addTaskToFireStore() async {
+  //   await taskReference
+  //       .set({
+  //         'email': userInfo.email.toString(),
+  //         'date': todaysDate,
+  //         'user_id': userInfo.uid.toString(),
+  //         'task_name': '???',
+  //         'task_startTime': taskStaringTime,
+  //         'task_endTime': taskEndingTime,
+  //         'task_progress': _selectedLocation,
+  //       })
+  //       .then((value) => print("Information Added"))
+  //       .catchError((error) => print("Failed to add Information: $error"));
+  // }
+
+  bool attSubmit = false;
 
   @override
   Widget build(BuildContext context) {
-    DocumentReference user = FirebaseFirestore.instance
+    Stream attendenceStream = FirebaseFirestore.instance
         .collection("Attendence")
-        .doc(FirebaseAuth.instance.currentUser!.email.toString())
+        .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection(DateFormat.yMMMd().format(DateTime.now()).toString())
-        .doc(FirebaseAuth.instance.currentUser!.uid.toString());
+        .doc()
+        .snapshots();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Attendence & Task Management"),
+        backgroundColor: Colors.blue,
+        title: const Text(
+          "Attendence & Task Management",
+          style: TextStyle(
+            fontSize: 30,
+            fontStyle: FontStyle.italic,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
+        elevation: 0,
         leading: SizedBox(
           width: 100,
           height: 100,
@@ -159,7 +184,7 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
           children: <Widget>[
             // create a navigation rail
             NavigationRail(
-              elevation: 10,
+              elevation: 1,
               leading: Container(
                 margin: const EdgeInsets.all(5),
                 child: ElevatedButton.icon(
@@ -167,7 +192,7 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                     auth.signOut();
                   },
                   style: TextButton.styleFrom(
-                    backgroundColor: Colors.red,
+                    backgroundColor: Colors.green,
                   ),
                   icon: const Icon(
                     Icons.logout,
@@ -244,6 +269,10 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                       child: ElevatedButton(
                                         onPressed: () {
                                           getInTime();
+                                          setState(() {
+                                            attSubmit = false;
+                                            attendenceOutTime = "";
+                                          });
                                         },
                                         style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.blue[100]),
@@ -266,6 +295,10 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                       child: ElevatedButton(
                                         onPressed: () {
                                           getOutTime();
+                                          setState(() {
+                                            attSubmit = true;
+                                            attendenceInTime = "";
+                                          });
                                         },
                                         style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.blue[100]),
@@ -285,26 +318,47 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                               ),
 
                               //submit button
-                              Container(
-                                width: 200,
-                                height: 70,
-                                margin: const EdgeInsets.only(top: 10),
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    addAttendenceToFireStore();
-                                    setState(() {
-                                      attendenceInTime = '';
-                                      attendenceOutTime = '';
-                                    });
-                                  },
-                                  child: const Text(
-                                    "Submit Time",
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ),
+                              attSubmit == false
+                                  ? Container(
+                                      width: 220,
+                                      height: 70,
+                                      margin: const EdgeInsets.only(top: 10),
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          addInTimeToFireStore();
+                                          setState(() {
+                                            attendenceInTime = '';
+                                            attendenceOutTime = '';
+                                          });
+                                        },
+                                        child: const Text(
+                                          "Submit In-Time",
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    )
+                                  : Container(
+                                      width: 220,
+                                      height: 70,
+                                      margin: const EdgeInsets.only(top: 10),
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          addOutTimeToFireStore();
+                                          setState(() {
+                                            attendenceInTime = '';
+                                            attendenceOutTime = '';
+                                          });
+                                        },
+                                        child: const Text(
+                                          "Submit Out-Time",
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ),
                             ],
                           ),
                         ),
@@ -321,41 +375,44 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                           ),
                           child: Column(
                             children: [
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.7,
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: const <Widget>[
-                                    Text(
-                                      "Email",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
+                              Container(
+                                child: SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.7,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: const <Widget>[
+                                      Text(
+                                        "Email",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      "Date",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
+                                      Text(
+                                        "Date",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      "In Time",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
+                                      Text(
+                                        "In Time",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      "Out Time",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
+                                      Text(
+                                        "Out Time",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                               Container(
@@ -367,26 +424,63 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                   color: Colors.blue[100],
                                   border: Border.all(),
                                 ),
-                                child: ListView.builder(
-                                  itemCount: 100,
-                                  itemBuilder: (context, index) {
-                                    return Container(
-                                      padding: const EdgeInsets.all(8),
-                                      margin: const EdgeInsets.all(5),
-                                      decoration: BoxDecoration(
-                                        color: Colors.blue[400],
-                                        border: Border.all(),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
-                                        children: [
-                                          Text("Hello"),
-                                          Text("hello"),
-                                          Text("hello"),
-                                          Text("hello"),
-                                        ],
-                                      ),
+                                child: StreamBuilder(
+                                  stream: FirebaseFirestore.instance
+                                      .collection("Attendence")
+                                      .doc(FirebaseAuth
+                                          .instance.currentUser!.email)
+                                      .collection(DateFormat.MMM()
+                                          .format(DateTime.now())
+                                          .toString())
+                                      .snapshots(),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasError) {
+                                      return const Center(
+                                          child: Text("Something went wrong"));
+                                    }
+
+                                    if (!snapshot.hasData) {
+                                      return const Center(
+                                          child:
+                                              Text("Document does not exist"));
+                                    }
+
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const Center(
+                                          child: Text("loading"));
+                                    }
+
+                                    return ListView.builder(
+                                      itemCount: snapshot.data!.docs.length,
+                                      itemBuilder: (context, index) {
+                                        if (snapshot.hasData) {
+                                          return Container(
+                                            padding: const EdgeInsets.all(8),
+                                            margin: const EdgeInsets.all(5),
+                                            decoration: BoxDecoration(
+                                              color: Colors.blue[400],
+                                              border: Border.all(),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
+                                              children: [
+                                                Text(snapshot.data!.docs[index]
+                                                    ['email']),
+                                                Text(snapshot.data!.docs[index]
+                                                    ['date']),
+                                                Text(snapshot.data!.docs[index]
+                                                    ['attendence_inTime']),
+                                                Text(snapshot.data!.docs[index]
+                                                    ['attendence_outTime']),
+                                              ],
+                                            ),
+                                          );
+                                        }
+                                        return const Center(
+                                            child: CircularProgressIndicator());
+                                      },
                                     );
                                   },
                                 ),
