@@ -1,8 +1,7 @@
-import 'dart:math';
+import 'dart:html';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -23,13 +22,11 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
   String dropDownValue = '';
   String todaysDate = '';
   bool cond = true;
-
-  Widget divider = const VerticalDivider(
-    color: Colors.black,
-    // thickness: 1,
-  );
+  bool attSubmit = false;
+  bool taskSubmit = false;
 
   String? _selectedLocation;
+
   final List<String> _locations = [
     'is Completed',
     'in Progress',
@@ -109,28 +106,62 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
     setAttendence.update(user);
   }
 
-  bool attSubmit = false;
+  Future<void> addTaskToFireStore() async {
+    final setAttendence = FirebaseFirestore.instance
+        .collection("Task")
+        .doc(FirebaseAuth.instance.currentUser!.email)
+        .collection(DateFormat.MMM().format(DateTime.now()).toString())
+        .doc(DateFormat.d().format(DateTime.now()).toString());
+
+    final user = {
+      'email': userInfo.email.toString(),
+      'date': DateFormat.yMMMd().format(DateTime.now()).toString(),
+      'task_name': "🤔",
+      'task_progress': dropDownValue,
+      'task_startTime': taskStaringTime,
+      'task_endTime': taskEndingTime,
+    };
+
+    setAttendence.set(user);
+  }
+
+  Future<void> updateTaskToFireStore() async {
+    final setAttendence = FirebaseFirestore.instance
+        .collection("Task")
+        .doc(FirebaseAuth.instance.currentUser!.email)
+        .collection(DateFormat.MMM().format(DateTime.now()).toString())
+        .doc(DateFormat.d().format(DateTime.now()).toString());
+
+    final user = {
+      'task_endTime': taskEndingTime,
+      'task_progress': dropDownValue,
+    };
+
+    setAttendence.update(user);
+  }
 
   @override
   Widget build(BuildContext context) {
-    Stream attendenceStream = FirebaseFirestore.instance
-        .collection("Attendence")
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .collection(DateFormat.yMMMd().format(DateTime.now()).toString())
-        .doc()
-        .snapshots();
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
-        title: const Text(
-          "Attendence & Task Management",
-          style: TextStyle(
-            fontSize: 30,
-            fontStyle: FontStyle.italic,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: _selectedIndex == 0
+            ? const Text(
+                "Attendence System",
+                style: TextStyle(
+                  fontSize: 30,
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.bold,
+                ),
+              )
+            : const Text(
+                "Task Management System",
+                style: TextStyle(
+                  fontSize: 30,
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
         centerTitle: true,
         elevation: 0,
         leading: SizedBox(
@@ -159,13 +190,22 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
             NavigationRail(
               elevation: 1,
               leading: Container(
+                height: 50,
+                padding: const EdgeInsets.all(5),
                 margin: const EdgeInsets.all(5),
                 child: ElevatedButton.icon(
                   onPressed: () async {
                     auth.signOut();
                   },
-                  style: TextButton.styleFrom(
+                  style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
+                    // side: BorderSide(color: Colors.yellow, width: 5),
+                    textStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 25,
+                        fontStyle: FontStyle.normal),
+                    shape: const BeveledRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(10))),
                   ),
                   icon: const Icon(
                     Icons.logout,
@@ -193,7 +233,13 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                     Icons.person_rounded,
                     size: 50,
                   ),
-                  label: Text('Attendence'),
+                  label: Text(
+                    'Attendence',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15),
+                  ),
                 ),
                 NavigationRailDestination(
                   icon: Icon(
@@ -204,7 +250,13 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                     Icons.task_rounded,
                     size: 50,
                   ),
-                  label: Text('Task'),
+                  label: Text(
+                    'Task',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15),
+                  ),
                 ),
               ],
               selectedIconTheme: const IconThemeData(color: Colors.white),
@@ -248,7 +300,16 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                           });
                                         },
                                         style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.blue[100]),
+                                          backgroundColor: Colors.blue,
+                                          // side: BorderSide(color: Colors.yellow, width: 5),
+                                          textStyle: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 25,
+                                              fontStyle: FontStyle.normal),
+                                          shape: const BeveledRectangleBorder(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(10))),
+                                        ),
                                         child: Text(
                                           attendenceInTime == ''
                                               ? "Pick in Time   "
@@ -274,7 +335,16 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                           });
                                         },
                                         style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.blue[100]),
+                                          backgroundColor: Colors.blue,
+                                          // side: BorderSide(color: Colors.yellow, width: 5),
+                                          textStyle: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 25,
+                                              fontStyle: FontStyle.normal),
+                                          shape: const BeveledRectangleBorder(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(10))),
+                                        ),
                                         child: Text(
                                           attendenceOutTime == ''
                                               ? "Pick out Time"
@@ -293,8 +363,8 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                               //submit button
                               attSubmit == false
                                   ? Container(
-                                      width: 220,
-                                      height: 70,
+                                      width: 400,
+                                      height: 50,
                                       margin: const EdgeInsets.only(top: 10),
                                       child: ElevatedButton(
                                         onPressed: () {
@@ -304,6 +374,17 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                             attendenceOutTime = '';
                                           });
                                         },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blue,
+                                          // side: BorderSide(color: Colors.yellow, width: 5),
+                                          textStyle: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 25,
+                                              fontStyle: FontStyle.normal),
+                                          shape: const BeveledRectangleBorder(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(10))),
+                                        ),
                                         child: const Text(
                                           "Submit In-Time",
                                           style: TextStyle(
@@ -313,8 +394,8 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                       ),
                                     )
                                   : Container(
-                                      width: 220,
-                                      height: 70,
+                                      width: 400,
+                                      height: 50,
                                       margin: const EdgeInsets.only(top: 10),
                                       child: ElevatedButton(
                                         onPressed: () {
@@ -324,6 +405,17 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                             attendenceOutTime = '';
                                           });
                                         },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blue,
+                                          // side: BorderSide(color: Colors.yellow, width: 5),
+                                          textStyle: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 25,
+                                              fontStyle: FontStyle.normal),
+                                          shape: const BeveledRectangleBorder(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(10))),
+                                        ),
                                         child: const Text(
                                           "Submit Out-Time",
                                           style: TextStyle(
@@ -336,11 +428,11 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                           ),
                         ),
 
-                        //////////////////////
-                        ///
-                        /// List of Attendence
-                        ///
-                        //////////////////////
+                        ///////////////////////////
+                        ///                     ///
+                        ///  List of Attendence ///
+                        ///                     ///
+                        ///////////////////////////
 
                         Container(
                           decoration: BoxDecoration(
@@ -348,44 +440,41 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                           ),
                           child: Column(
                             children: [
-                              Container(
-                                child: SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.7,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: const <Widget>[
-                                      Text(
-                                        "Email",
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.7,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: const <Widget>[
+                                    Text(
+                                      "Email",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                      Text(
-                                        "Date",
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                    ),
+                                    Text(
+                                      "Date",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                      Text(
-                                        "In Time",
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                    ),
+                                    Text(
+                                      "In Time",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                      Text(
-                                        "Out Time",
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                    ),
+                                    Text(
+                                      "Out Time",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               Container(
@@ -432,21 +521,45 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                             padding: const EdgeInsets.all(8),
                                             margin: const EdgeInsets.all(5),
                                             decoration: BoxDecoration(
-                                              color: Colors.blue[400],
+                                              color: Colors.blue,
                                               border: Border.all(),
                                             ),
                                             child: Row(
                                               mainAxisAlignment:
                                                   MainAxisAlignment.spaceAround,
                                               children: [
-                                                Text(snapshot.data!.docs[index]
-                                                    ['email']),
-                                                Text(snapshot.data!.docs[index]
-                                                    ['date']),
-                                                Text(snapshot.data!.docs[index]
-                                                    ['attendence_inTime']),
-                                                Text(snapshot.data!.docs[index]
-                                                    ['attendence_outTime']),
+                                                Text(
+                                                  snapshot.data!.docs[index]
+                                                      ['email'],
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  snapshot.data!.docs[index]
+                                                      ['date'],
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  snapshot.data!.docs[index]
+                                                      ['attendence_inTime'],
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  snapshot.data!.docs[index]
+                                                      ['attendence_outTime'],
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
                                               ],
                                             ),
                                           );
@@ -464,190 +577,388 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                       ],
                     ),
                   )
-                : Align(
-                    alignment: Alignment.center,
-                    child: Container(
-                      width: 1200,
-                      height: 550,
-                      color: Colors.amber,
-                      // child: Column(
-                      //   children: [
-                      //     Container(
-                      //       color: Colors.white,
-                      //       child: Column(
-                      //         crossAxisAlignment: CrossAxisAlignment.center,
-                      //         children: [
-                      //           const SizedBox(height: 30),
-                      //           SizedBox(
-                      //             height: 50,
-                      //             child: Row(
-                      //               mainAxisAlignment:
-                      //                   MainAxisAlignment.spaceAround,
-                      //               crossAxisAlignment:
-                      //                   CrossAxisAlignment.center,
-                      //               children: [
-                      //                 divider,
-                      //                 /////////////////////////
-                      //                 Column(
-                      //                   mainAxisAlignment:
-                      //                       MainAxisAlignment.center,
-                      //                   children: [
-                      //                     Text(todaysDate),
-                      //                     TextButton.icon(
-                      //                       onPressed: () {
-                      //                         getDate();
-                      //                       },
-                      //                       icon: const Icon(Icons.sunny),
-                      //                       label:
-                      //                           const Text("Pick Today's Date"),
-                      //                     ),
-                      //                   ],
-                      //                 ),
-                      //                 divider,
-                      //                 Column(
-                      //                   mainAxisAlignment:
-                      //                       MainAxisAlignment.center,
-                      //                   children: [
-                      //                     Text(taskStaringTime),
-                      //                     TextButton.icon(
-                      //                       onPressed: () {
-                      //                         getStartTime();
-                      //                       },
-                      //                       icon: const Icon(Icons.start),
-                      //                       label:
-                      //                           const Text("Pick Start Time"),
-                      //                     ),
-                      //                   ],
-                      //                 ),
-                      //                 divider,
-                      //                 //////////////////////
-                      //                 Column(
-                      //                   mainAxisAlignment:
-                      //                       MainAxisAlignment.center,
-                      //                   children: [
-                      //                     Text(taskEndingTime),
-                      //                     TextButton.icon(
-                      //                       onPressed: () {
-                      //                         getEndTime();
-                      //                       },
-                      //                       icon: const Icon(Icons.start),
-                      //                       label: const Text("Pick End Time"),
-                      //                     ),
-                      //                   ],
-                      //                 ),
-                      //                 divider,
-                      //                 /////////////////////
-                      //                 DropdownButton(
-                      //                   hint: const Text(
-                      //                       'Task Progress'), // Not necessary for Option 1
-                      //                   value: _selectedLocation,
-                      //                   onChanged: (newValue) {
-                      //                     setState(
-                      //                       () {
-                      //                         _selectedLocation = newValue;
-                      //                       },
-                      //                     );
-                      //                   },
-                      //                   items: _locations.map((location) {
-                      //                     return DropdownMenuItem(
-                      //                       value: location,
-                      //                       child: Text(location),
-                      //                     );
-                      //                   }).toList(),
-                      //                 ),
-                      //                 divider,
-                      //                 ////////////////////
-                      //                 ElevatedButton(
-                      //                   onPressed: () {
-                      //                     if (todaysDate == '' &&
-                      //                         taskStaringTime == '' &&
-                      //                         taskEndingTime == '' &&
-                      //                         _selectedLocation == "") {
-                      //                       showDialog(
-                      //                         context: context,
-                      //                         builder: (context) => AlertDialog(
-                      //                           title: const Text(
-                      //                               "Please Pick Starting/Ending Time"),
-                      //                           actions: [
-                      //                             TextButton(
-                      //                               child: const Text("OK"),
-                      //                               onPressed: () {
-                      //                                 Navigator.of(context)
-                      //                                     .pop();
-                      //                               },
-                      //                             ),
-                      //                           ],
-                      //                         ),
-                      //                       );
-                      //                     } else {
-                      //                       addTaskToFireStore();
-                      //                     }
-                      //                   },
-                      //                   child: const Text("Submit"),
-                      //                 ),
-                      //                 divider,
-                      //                 /////////////////////
-                      //               ],
-                      //             ),
-                      //           ),
-                      //           const SizedBox(height: 30),
-                      //           Row(
-                      //             mainAxisAlignment:
-                      //                 MainAxisAlignment.spaceEvenly,
-                      //             children: const [
-                      //               Text(
-                      //                 "User Email",
-                      //                 style: TextStyle(
-                      //                   fontSize: 20,
-                      //                   fontWeight: FontWeight.bold,
-                      //                 ),
-                      //               ),
-                      //               Text(
-                      //                 "               Date",
-                      //                 style: TextStyle(
-                      //                   fontSize: 20,
-                      //                   fontWeight: FontWeight.bold,
-                      //                 ),
-                      //               ),
-                      //               Text(
-                      //                 "     Task Name",
-                      //                 style: TextStyle(
-                      //                   fontSize: 20,
-                      //                   fontWeight: FontWeight.bold,
-                      //                 ),
-                      //               ),
-                      //               Text(
-                      //                 "Starts from",
-                      //                 style: TextStyle(
-                      //                   fontSize: 20,
-                      //                   fontWeight: FontWeight.bold,
-                      //                 ),
-                      //               ),
-                      //               Text(
-                      //                 "Ends till",
-                      //                 style: TextStyle(
-                      //                   fontSize: 20,
-                      //                   fontWeight: FontWeight.bold,
-                      //                 ),
-                      //               ),
-                      //               Text(
-                      //                 "         Task Progress",
-                      //                 style: TextStyle(
-                      //                   fontSize: 20,
-                      //                   fontWeight: FontWeight.bold,
-                      //                 ),
-                      //               ),
-                      //             ],
-                      //           ),
-                      //           SizedBox(
-                      //             height: 300,
-                      //             child: TaskList(divider: divider),
-                      //           ),
-                      //         ],
-                      //       ),
-                      //     ),
-                      //   ],
-                      // ),
+                : Container(
+                    padding: const EdgeInsets.all(10),
+                    margin: const EdgeInsets.only(left: 10),
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    height: MediaQuery.of(context).size.height * 1.0,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        //Top Buttons Portion
+                        Container(
+                          width: MediaQuery.of(context).size.width * 0.7,
+                          margin: const EdgeInsets.only(top: 10, bottom: 10),
+                          padding: const EdgeInsets.all(5),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Task Starting Time...
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Column(
+                                    children: [
+                                      SizedBox(
+                                        height: 50,
+                                        width: 200,
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            getStartTime();
+                                            setState(() {
+                                              taskEndingTime = "";
+                                              taskSubmit = false;
+                                            });
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.blue,
+                                            // side: BorderSide(color: Colors.yellow, width: 5),
+                                            textStyle: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 25,
+                                                fontStyle: FontStyle.normal),
+                                            shape: const BeveledRectangleBorder(
+                                                borderRadius: BorderRadius.all(
+                                                    Radius.circular(10))),
+                                          ),
+                                          child: taskStaringTime == ''
+                                              ? const Text(
+                                                  "Pick Start Time",
+                                                  style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                )
+                                              : Text(
+                                                  taskStaringTime,
+                                                  style: const TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      SizedBox(
+                                        height: 50,
+                                        width: 200,
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            getEndTime();
+                                            setState(() {
+                                              taskStaringTime = '';
+                                              taskSubmit = true;
+                                            });
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.blue,
+                                            // side: BorderSide(color: Colors.yellow, width: 5),
+                                            textStyle: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 25,
+                                                fontStyle: FontStyle.normal),
+                                            shape: const BeveledRectangleBorder(
+                                                borderRadius: BorderRadius.all(
+                                                    Radius.circular(10))),
+                                          ),
+                                          child: taskEndingTime == ""
+                                              ? const Text(
+                                                  "Pick End Time",
+                                                  style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                )
+                                              : Text(
+                                                  taskEndingTime,
+                                                  style: const TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 50),
+                                  DropdownButton(
+                                    focusColor: Colors.blue[100],
+                                    hint: dropDownValue.isEmpty
+                                        ? const Text("Task Status")
+                                        : Text(dropDownValue),
+                                    items: _locations.map((String val) {
+                                      return DropdownMenuItem<String>(
+                                        value: val,
+                                        child: Text(val),
+                                      );
+                                    }).toList(),
+                                    onChanged: (val) {
+                                      setState(
+                                        () {
+                                          dropDownValue = val!;
+                                        },
+                                      );
+                                    },
+                                  ),
+                                  //submit button
+                                  const SizedBox(width: 50),
+                                  taskSubmit == false
+                                      ? Container(
+                                          width: 220,
+                                          height: 50,
+                                          margin:
+                                              const EdgeInsets.only(top: 10),
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                addTaskToFireStore();
+                                                taskSubmit = true;
+                                                taskStaringTime = '';
+                                                taskEndingTime = '';
+                                              });
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.blue,
+                                              // side: BorderSide(color: Colors.yellow, width: 5),
+                                              textStyle: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 25,
+                                                  fontStyle: FontStyle.normal),
+                                              shape:
+                                                  const BeveledRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  10))),
+                                            ),
+                                            child: const Text(
+                                              "Submit Start Time",
+                                              style: TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        )
+                                      : Container(
+                                          width: 220,
+                                          height: 50,
+                                          margin:
+                                              const EdgeInsets.only(top: 10),
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                updateTaskToFireStore();
+                                                taskSubmit = false;
+                                                taskStaringTime = '';
+                                                taskEndingTime = '';
+                                              });
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.blue,
+                                              // side: BorderSide(color: Colors.yellow, width: 5),
+                                              textStyle: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 25,
+                                                  fontStyle: FontStyle.normal),
+                                              shape:
+                                                  const BeveledRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  10))),
+                                            ),
+                                            child: const Text(
+                                              "Submit End Time",
+                                              style: TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        ///////////////////////////
+                        ///                     ///
+                        ///     List of Task    ///
+                        ///                     ///
+                        ///////////////////////////
+
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(),
+                          ),
+                          child: Column(
+                            children: [
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.7,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: const <Widget>[
+                                    Text(
+                                      "Email",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      "Date",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      "Task-Name",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      "Start Time",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      "End Time",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      "Progress",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.50,
+                                padding: const EdgeInsets.all(5),
+                                margin: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue[100],
+                                  border: Border.all(),
+                                ),
+                                child: StreamBuilder(
+                                  stream: FirebaseFirestore.instance
+                                      .collection("Task")
+                                      .doc(FirebaseAuth
+                                          .instance.currentUser!.email)
+                                      .collection(DateFormat.MMM()
+                                          .format(DateTime.now())
+                                          .toString())
+                                      .snapshots(),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasError) {
+                                      return const Center(
+                                          child: Text("Something went wrong"));
+                                    }
+
+                                    if (!snapshot.hasData) {
+                                      return const Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    }
+
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const Center(
+                                          child: CircularProgressIndicator());
+                                    }
+
+                                    return ListView.builder(
+                                      itemCount: snapshot.data!.docs.length,
+                                      itemBuilder: (context, index) {
+                                        if (snapshot.hasData) {
+                                          return Container(
+                                            padding: const EdgeInsets.all(8),
+                                            margin: const EdgeInsets.all(5),
+                                            decoration: BoxDecoration(
+                                              color: Colors.blue[400],
+                                              border: Border.all(),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
+                                              children: [
+                                                Text(
+                                                  snapshot.data!.docs[index]
+                                                      ['email'],
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  snapshot.data!.docs[index]
+                                                      ['date'],
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  snapshot.data!.docs[index]
+                                                      ['task_name'],
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  snapshot.data!.docs[index]
+                                                      ['task_startTime'],
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  snapshot.data!.docs[index]
+                                                      ['task_endTime'],
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  snapshot.data!.docs[index]
+                                                      ['task_progress'],
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }
+                                        return const Center(
+                                            child: CircularProgressIndicator());
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
           ],
