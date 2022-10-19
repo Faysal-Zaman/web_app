@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ntp/ntp.dart';
 
 import '../auth/auth.dart';
 
@@ -41,35 +42,49 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
   final userInfo = FirebaseAuth.instance.currentUser!;
 
   DateTime now = DateTime.now();
+  DateTime ntpTime = DateTime.now();
+  @override
+  void initState() {
+    super.initState();
+    _loadNTPTime();
+  }
+
+  void _loadNTPTime() async {
+    setState(() async {
+      ntpTime = await NTP.now();
+    });
+  }
 
   Future getInTime() async {
     setState(() {
-      attendenceInTime = DateFormat.jm().format(DateTime.now()).toString();
+      attendenceInTime = DateFormat.jm().format(ntpTime).toString();
     });
   }
 
   Future getStartTime() async {
     setState(() {
-      taskStaringTime = DateFormat.jm().format(DateTime.now()).toString();
+      taskStaringTime = DateFormat.jm().format(ntpTime).toString();
     });
   }
 
   Future getOutTime() async {
     setState(() {
-      attendenceOutTime = DateFormat.jm().format(DateTime.now()).toString();
+      attendenceOutTime = DateFormat.jm().format(ntpTime).toString();
     });
   }
 
   Future getEndTime() async {
     setState(() {
-      taskEndingTime = DateFormat.jm().format(DateTime.now()).toString();
+      taskEndingTime = DateFormat.jm().format(ntpTime).toString();
     });
   }
 
   Future getDate() async {
-    setState(() {
-      todaysDate = DateFormat.yMMMd().format(DateTime.now()).toString();
-    });
+    setState(
+      () {
+        todaysDate = DateFormat.yMMMd().format(DateTime.now()).toString();
+      },
+    );
   }
 
   //DateFormat.yMMMd().format(DateTime.now()).toString()
@@ -646,10 +661,12 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                         child: ElevatedButton(
                                           onPressed: () {
                                             getEndTime();
-                                            setState(() {
-                                              taskStaringTime = '';
-                                              taskSubmit = true;
-                                            });
+                                            setState(
+                                              () {
+                                                taskStaringTime = '';
+                                                taskSubmit = true;
+                                              },
+                                            );
                                           },
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.blue,
