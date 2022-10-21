@@ -27,6 +27,8 @@ dependencies:
   email_validator: ^2.1.17  
   #for responsive scaffold
   responsive_scaffold_nullsafe: ^1.0.1 
+  http: ^0.13.5 
+  
 
 
 

@@ -3,8 +3,9 @@ import 'dart:html';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:intl/intl.dart';
-import 'package:ntp/ntp.dart';
+import 'dart:convert' as convert;
 
 import '../auth/auth.dart';
 
@@ -16,15 +17,15 @@ class UserPanelScreen extends StatefulWidget {
 }
 
 class _UserPanelScreenState extends State<UserPanelScreen> {
-  String attendenceInTime = "";
-  String attendenceOutTime = "";
+  String attendenceInTime = '';
+  String attendenceOutTime = '';
   String taskStaringTime = '';
   String taskEndingTime = '';
   String dropDownValue = '';
   String todaysDate = '';
-  bool cond = true;
-  bool attSubmit = false;
   bool taskSubmit = false;
+  bool attSubmit = false;
+  bool cond = true;
 
   String? _selectedLocation;
 
@@ -41,48 +42,77 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
 
   final userInfo = FirebaseAuth.instance.currentUser!;
 
-  DateTime now = DateTime.now();
-  DateTime ntpTime = DateTime.now();
+  /// for getting the actual time via api
+
+  final DateTime _time = DateTime.now();
+
+  String time = '';
+  Future<void> hitServer() async {
+    var value = Uri.parse('http://worldtimeapi.org/api/timezone/Asia/Karachi');
+    var response = await get(value);
+    var jsonResponse =
+        convert.jsonDecode(response.body) as Map<String, dynamic>;
+
+    var dateNTime = jsonResponse['datetime'];
+    print("response.body => " + jsonResponse['utc_offset']);
+    var uc_offset = jsonResponse['utc_offset'].toString().substring(1, 3);
+    print("response.body => " + uc_offset);
+
+    DateTime dateTime = DateTime.parse(dateNTime);
+    dateTime = dateTime.add(Duration(hours: int.parse(uc_offset)));
+    print('dateTime  => ' + dateTime.toString());
+
+    print("dateFormat.jm() => " + DateFormat.jm().format(dateTime));
+    print("dateFormat.jm() => " + DateFormat.Hm().format(dateTime));
+
+    setState(() {
+      time = DateFormat.jm().format(dateTime).toString();
+    });
+    print('time : ' + time);
+  }
+
   @override
   void initState() {
     super.initState();
-    _loadNTPTime();
-  }
-
-  void _loadNTPTime() async {
-    setState(() async {
-      ntpTime = await NTP.now();
-    });
+    hitServer();
   }
 
   Future getInTime() async {
-    setState(() {
-      attendenceInTime = DateFormat.jm().format(ntpTime).toString();
-    });
+    setState(
+      () {
+        attendenceInTime = time;
+      },
+    );
   }
 
   Future getStartTime() async {
-    setState(() {
-      taskStaringTime = DateFormat.jm().format(ntpTime).toString();
-    });
+    setState(
+      () {
+        taskStaringTime = time;
+      },
+    );
   }
 
   Future getOutTime() async {
-    setState(() {
-      attendenceOutTime = DateFormat.jm().format(ntpTime).toString();
-    });
+    setState(
+      () {
+        attendenceOutTime = time;
+      },
+    );
   }
 
   Future getEndTime() async {
-    setState(() {
-      taskEndingTime = DateFormat.jm().format(ntpTime).toString();
-    });
+    setState(
+      () {
+        taskEndingTime = time;
+      },
+    );
   }
 
   Future getDate() async {
     setState(
       () {
-        todaysDate = DateFormat.yMMMd().format(DateTime.now()).toString();
+        todaysDate = DateFormat.yMMMd().format(_time).toString();
       },
     );
   }
@@ -518,8 +548,7 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
 
                                     if (!snapshot.hasData) {
                                       return const Center(
-                                          child:
-                                              Text("Document does not exist"));
+                                          child: CircularProgressIndicator());
                                     }
 
                                     if (snapshot.connectionState ==
