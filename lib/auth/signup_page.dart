@@ -22,153 +22,163 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
 
-  Future<void> addToFireStore() async {
-    //save data to Firestore...
-    FirebaseFirestore.instance
-        .collection('Users_Accounts')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .set({
-          'full_name': nameController.text.trim().toString(),
-          'email': emailController.text.trim().toString(),
-          'password': passwordController.text.trim().toString(),
-        })
-        .then((value) => print("User Added"))
-        .catchError((error) => print("Failed to add user: $error"));
-  }
-
-  Future<void> addTaskStatusToFireStore() async {
-    FirebaseFirestore.instance
-        .collection('Task_Status')
-        .doc(FirebaseAuth.instance.currentUser!.uid.toString())
-        .set({
-          'task_name': "???",
-          'task_remarks': "???",
-        })
-        .then((value) => print("Task Status Added"))
-        .catchError((error) => print("Failed to add Task status: $error"));
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              const SizedBox(height: 10),
-              SizedBox(
-                  width: 100,
-                  height: 100,
-                  child: Image.asset("assets/logo.png")),
-              const SizedBox(height: 30),
-              Form(
-                key: formKey,
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: 300,
-                      child: TextFormField(
-                        autofocus: false,
-                        controller: nameController,
-                        keyboardType: TextInputType.visiblePassword,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (value) => value != null && value.length < 3
-                            ? 'Enter correct name'
-                            : null,
-                        onSaved: (value) {
-                          nameController.text = value!;
-                        },
-                        textInputAction: TextInputAction.next,
-                        decoration: InputDecoration(
-                          hintText: "Name",
-                          prefixIcon: const Icon(Icons.perm_identity),
-                          border: OutlineInputBorder(
-                            gapPadding: 20,
-                            borderSide: const BorderSide(
-                              width: 10,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: 300,
-                      child: TextFormField(
-                        autofocus: false,
-                        controller: emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (email) =>
-                            email != null && !EmailValidator.validate(email)
-                                ? 'Enter a valid email'
-                                : null,
-                        onSaved: (value) {
-                          emailController.text = value!;
-                        },
-                        textInputAction: TextInputAction.next,
-                        decoration: InputDecoration(
-                          hintText: "Email",
-                          prefixIcon: const Icon(Icons.email),
-                          border: OutlineInputBorder(
-                            gapPadding: 20,
-                            borderSide: const BorderSide(
-                              width: 10,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: 300,
-                      child: TextFormField(
-                        autofocus: false,
-                        controller: passwordController,
-                        keyboardType: TextInputType.visiblePassword,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (value) => value != null && value.length < 6
-                            ? 'Enter min. 6 characters'
-                            : null,
-                        onSaved: (value) {
-                          passwordController.text = value!;
-                        },
-                        textInputAction: TextInputAction.next,
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          hintText: "Password",
-                          prefixIcon: const Icon(Icons.key),
-                          border: OutlineInputBorder(
-                            gapPadding: 20,
-                            borderSide: const BorderSide(
-                              width: 10,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+    return SingleChildScrollView(
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 1,
+        child: Scaffold(
+          body: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color.fromARGB(255, 118, 79, 185),
+                  Color.fromARGB(255, 165, 150, 155),
+                  Color.fromARGB(255, 128, 97, 181),
+                ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
               ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: 300,
-                child: Material(
-                  elevation: 10,
-                  borderRadius: BorderRadius.circular(50),
-                  child: MaterialButton(
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.3,
+                  height: MediaQuery.of(context).size.height * 0.2,
+                  child: Image.asset("assets/logo.png"),
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                const Text(
+                  "Sign Up",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 50,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                Form(
+                  key: formKey,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.3,
+                        height: MediaQuery.of(context).size.height * 0.1,
+                        child: TextFormField(
+                          autofocus: false,
+                          controller: nameController,
+                          keyboardType: TextInputType.visiblePassword,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          validator: (value) =>
+                              value != null && value.length < 3
+                                  ? 'Enter correct name'
+                                  : null,
+                          onSaved: (value) {
+                            nameController.text = value!;
+                          },
+                          textInputAction: TextInputAction.next,
+                          decoration: InputDecoration(
+                            hintText: "Name",
+                            prefixIcon: const Icon(Icons.perm_identity),
+                            border: OutlineInputBorder(
+                              gapPadding: 20,
+                              borderSide: const BorderSide(
+                                width: 10,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.02),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.3,
+                        height: MediaQuery.of(context).size.height * 0.1,
+                        child: TextFormField(
+                          autofocus: false,
+                          controller: emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          validator: (email) =>
+                              email != null && !EmailValidator.validate(email)
+                                  ? 'Enter a valid email'
+                                  : null,
+                          onSaved: (value) {
+                            emailController.text = value!;
+                          },
+                          textInputAction: TextInputAction.next,
+                          decoration: InputDecoration(
+                            hintText: "Email",
+                            prefixIcon: const Icon(Icons.email),
+                            border: OutlineInputBorder(
+                              gapPadding: 20,
+                              borderSide: const BorderSide(
+                                width: 10,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.02),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.3,
+                        height: MediaQuery.of(context).size.height * 0.1,
+                        child: TextFormField(
+                          autofocus: false,
+                          controller: passwordController,
+                          keyboardType: TextInputType.visiblePassword,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          validator: (value) =>
+                              value != null && value.length < 6
+                                  ? 'Enter min. 6 characters'
+                                  : null,
+                          onSaved: (value) {
+                            passwordController.text = value!;
+                          },
+                          textInputAction: TextInputAction.next,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            hintText: "Password",
+                            prefixIcon: const Icon(Icons.key),
+                            border: OutlineInputBorder(
+                              gapPadding: 20,
+                              borderSide: const BorderSide(
+                                width: 10,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(80),
+                    gradient: const LinearGradient(
+                      colors: [
+                        Colors.deepPurple,
+                        Colors.pink,
+                        Colors.deepPurple,
+                      ],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                  ),
+                  width: MediaQuery.of(context).size.width * 0.3,
+                  height: MediaQuery.of(context).size.height * 0.1,
+                  child: TextButton(
                     onPressed: () async {
                       authHandler.handleSignUp(emailController.text.trim(),
                           passwordController.text.trim(), context);
                     },
-                    color: Colors.amber,
-                    padding: const EdgeInsets.fromLTRB(15, 20, 15, 20),
-                    minWidth: double.infinity,
                     child: const Text(
                       "Sign Up",
                       textAlign: TextAlign.center,
@@ -181,30 +191,32 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("Have an account?  "),
-                  GestureDetector(
-                    child: const Text(
-                      "Sign In",
-                      style: TextStyle(color: Colors.deepPurple, fontSize: 20),
-                    ),
-                    onTap: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => const SignInPage(),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("Already have an account?   "),
+                    GestureDetector(
+                      child: const Text(
+                        "Login",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ],
+                      ),
+                      onTap: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => const SignInPage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
