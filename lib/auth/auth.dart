@@ -19,7 +19,9 @@ class Auth {
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(
-        child: CircularProgressIndicator(),
+        child: CircularProgressIndicator(
+          color: Colors.grey,
+        ),
       ),
     );
 
@@ -46,7 +48,9 @@ class Auth {
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(
-        child: CircularProgressIndicator(),
+        child: CircularProgressIndicator(
+          color: Colors.grey,
+        ),
       ),
     );
 
