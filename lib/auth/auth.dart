@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:web_app/global/colors.dart';
 import 'package:web_app/main.dart';
 
 import 'signin_page.dart';
@@ -20,7 +21,7 @@ class Auth {
       barrierDismissible: false,
       builder: (context) => const Center(
         child: CircularProgressIndicator(
-          color: Colors.grey,
+          color: MyColors.peach,
         ),
       ),
     );
@@ -49,7 +50,7 @@ class Auth {
       barrierDismissible: false,
       builder: (context) => const Center(
         child: CircularProgressIndicator(
-          color: Colors.grey,
+          color: MyColors.peach,
         ),
       ),
     );

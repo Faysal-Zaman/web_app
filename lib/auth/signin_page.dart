@@ -16,17 +16,18 @@ class SignInPage extends StatefulWidget {
 final formKey = GlobalKey<FormState>();
 
 class _SignInPageState extends State<SignInPage> {
+  bool visibility = true;
   // auth reference
   var auth = Auth();
 
+  // editing controller...
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-    // editing controller...
-    final TextEditingController emailController = TextEditingController();
-    final TextEditingController passController = TextEditingController();
-
     return SingleChildScrollView(
-      child: Container(
+      child: SizedBox(
         height: MediaQuery.of(context).size.height * 1,
         child: Scaffold(
           body: Container(
@@ -34,9 +35,9 @@ class _SignInPageState extends State<SignInPage> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color.fromARGB(255, 21, 97, 159),
-                  Color.fromARGB(255, 46, 152, 238),
-                  Color.fromARGB(255, 11, 94, 161),
+                  Color.fromARGB(255, 189, 192, 194),
+                  Color.fromARGB(255, 105, 130, 150),
+                  Color.fromARGB(255, 183, 187, 191),
                 ],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
@@ -110,11 +111,24 @@ class _SignInPageState extends State<SignInPage> {
                       onSaved: (value) {
                         passController.text = value!;
                       },
-                      textInputAction: TextInputAction.next,
-                      obscureText: true,
+                      textInputAction: TextInputAction.done,
+                      obscureText: visibility == true ? true : false,
                       decoration: InputDecoration(
                         hintText: "Password",
                         prefixIcon: const Icon(Icons.key, color: Colors.black),
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              visibility = !visibility;
+                            });
+                          },
+                          icon: Icon(
+                            visibility == true
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: Colors.black,
+                          ),
+                        ),
                         border: OutlineInputBorder(
                           gapPadding: 20,
                           borderSide: const BorderSide(
