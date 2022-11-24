@@ -18,9 +18,9 @@ class _HomePageState extends State<HomePage> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color.fromARGB(255, 146, 139, 139),
-              Color.fromARGB(255, 97, 96, 96),
-              Color.fromARGB(255, 146, 139, 139),
+              Color.fromARGB(255, 21, 97, 159),
+              Color.fromARGB(255, 46, 152, 238),
+              Color.fromARGB(255, 11, 94, 161),
             ],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
@@ -63,9 +63,9 @@ class _HomePageState extends State<HomePage> {
                         borderRadius: BorderRadius.circular(80),
                         gradient: const LinearGradient(
                           colors: [
-                            Colors.lightGreen,
-                            Colors.green,
-                            Colors.lightGreen,
+                            MyColors.peach,
+                            Color.fromARGB(237, 192, 167, 254),
+                            MyColors.peach,
                           ],
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,

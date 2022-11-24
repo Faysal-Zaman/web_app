@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:web_app/auth/signin_page.dart';
 
+import '../global/colors.dart';
 import 'auth.dart';
 import '../pages/user_panel.dart';
 
@@ -32,9 +33,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color.fromARGB(255, 146, 139, 139),
-                  Color.fromARGB(255, 97, 96, 96),
-                  Color.fromARGB(255, 146, 139, 139),
+                  Color.fromARGB(255, 21, 97, 159),
+                  Color.fromARGB(255, 46, 152, 238),
+                  Color.fromARGB(255, 11, 94, 161),
                 ],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
@@ -81,7 +82,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           textInputAction: TextInputAction.next,
                           decoration: InputDecoration(
                             hintText: "Name",
-                            prefixIcon: const Icon(Icons.perm_identity),
+                            prefixIcon: const Icon(Icons.perm_identity,
+                                color: Colors.black),
                             border: OutlineInputBorder(
                               gapPadding: 20,
                               borderSide: const BorderSide(
@@ -112,7 +114,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           textInputAction: TextInputAction.next,
                           decoration: InputDecoration(
                             hintText: "Email",
-                            prefixIcon: const Icon(Icons.email),
+                            prefixIcon:
+                                const Icon(Icons.email, color: Colors.black),
                             border: OutlineInputBorder(
                               gapPadding: 20,
                               borderSide: const BorderSide(
@@ -144,7 +147,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           obscureText: true,
                           decoration: InputDecoration(
                             hintText: "Password",
-                            prefixIcon: const Icon(Icons.key),
+                            prefixIcon:
+                                const Icon(Icons.key, color: Colors.black),
                             border: OutlineInputBorder(
                               gapPadding: 20,
                               borderSide: const BorderSide(
@@ -164,9 +168,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     borderRadius: BorderRadius.circular(80),
                     gradient: const LinearGradient(
                       colors: [
-                        Colors.lightGreen,
-                        Colors.green,
-                        Colors.lightGreen,
+                        MyColors.peach,
+                        Color.fromARGB(237, 192, 167, 254),
+                        MyColors.peach,
                       ],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,

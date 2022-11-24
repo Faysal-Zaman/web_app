@@ -2,6 +2,7 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:web_app/auth/auth.dart';
 
+import '../global/colors.dart';
 import 'signup_page.dart';
 
 class SignInPage extends StatefulWidget {
@@ -33,9 +34,9 @@ class _SignInPageState extends State<SignInPage> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color.fromARGB(255, 146, 139, 139),
-                  Color.fromARGB(255, 97, 96, 96),
-                  Color.fromARGB(255, 146, 139, 139),
+                  Color.fromARGB(255, 21, 97, 159),
+                  Color.fromARGB(255, 46, 152, 238),
+                  Color.fromARGB(255, 11, 94, 161),
                 ],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
@@ -78,8 +79,12 @@ class _SignInPageState extends State<SignInPage> {
                       },
                       textInputAction: TextInputAction.next,
                       decoration: InputDecoration(
+                        fillColor: Colors.white,
                         hintText: "Eamil",
-                        prefixIcon: const Icon(Icons.mail),
+                        prefixIcon: const Icon(
+                          Icons.mail,
+                          color: Colors.black,
+                        ),
                         border: OutlineInputBorder(
                           gapPadding: 20,
                           borderSide: const BorderSide(
@@ -109,7 +114,7 @@ class _SignInPageState extends State<SignInPage> {
                       obscureText: true,
                       decoration: InputDecoration(
                         hintText: "Password",
-                        prefixIcon: const Icon(Icons.key),
+                        prefixIcon: const Icon(Icons.key, color: Colors.black),
                         border: OutlineInputBorder(
                           gapPadding: 20,
                           borderSide: const BorderSide(
@@ -126,9 +131,9 @@ class _SignInPageState extends State<SignInPage> {
                       borderRadius: BorderRadius.circular(80),
                       gradient: const LinearGradient(
                         colors: [
-                          Colors.lightGreen,
-                          Colors.green,
-                          Colors.lightGreen,
+                          MyColors.peach,
+                          Color.fromARGB(237, 192, 167, 254),
+                          MyColors.peach,
                         ],
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
