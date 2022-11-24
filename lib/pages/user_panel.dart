@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'dart:convert' as convert;
 
 import '../auth/auth.dart';
+import '../global/colors.dart';
 
 class UserPanelScreen extends StatefulWidget {
   const UserPanelScreen({super.key});
@@ -19,177 +20,108 @@ class UserPanelScreen extends StatefulWidget {
 class _UserPanelScreenState extends State<UserPanelScreen> {
   String attendenceInTime = '';
   String attendenceOutTime = '';
-  String taskStaringTime = '';
-  String taskEndingTime = '';
-  String dropDownValue = '';
+  String taskStartDate = '';
+  String taskEndDate = '';
+  static String dropDownValue = '';
   String todaysDate = '';
   bool taskSubmit = false;
   bool attSubmit = false;
   bool cond = true;
-
+  final sKey = GlobalKey();
   String? _selectedLocation;
 
-  final List<String> _locations = [
+  // Reference of Auth...
+  var auth = Auth();
+  final userInfo = FirebaseAuth.instance.currentUser!;
+  final DateTime _time = DateTime.now();
+  String? time;
+  String? date;
+
+  // initialize an index
+  int _selectedIndex = 0;
+
+  static final List<String> _locations = [
     'is Completed',
     'in Progress',
   ];
 
-  // initialize a index
-  int _selectedIndex = 0;
-
-  // Reference of Auth...
-  var auth = Auth();
-
-  final userInfo = FirebaseAuth.instance.currentUser!;
-
   /// for getting the actual time via api
 
-  final DateTime _time = DateTime.now();
-
-  String time = '';
-  Future<void> hitServer() async {
-    var value = Uri.parse('http://worldtimeapi.org/api/timezone/Asia/Karachi');
-    var response = await get(value);
+  Future<String?> getCurrentTime() async {
+    var url = Uri.parse('http://worldtimeapi.org/api/timezone/Asia/Karachi');
+    var response = await get(url);
     var jsonResponse =
         convert.jsonDecode(response.body) as Map<String, dynamic>;
 
-    var dateNTime = jsonResponse['datetime'];
-    print("response.body => " + jsonResponse['utc_offset']);
-    var uc_offset = jsonResponse['utc_offset'].toString().substring(1, 3);
-    print("response.body => " + uc_offset);
+    if (response.statusCode == 200) {
+      var dateNTime = jsonResponse['datetime'];
+      print("response.body => " + jsonResponse['utc_offset']);
+      var uc_offset = jsonResponse['utc_offset'].toString().substring(1, 3);
+      print("response.body => " + uc_offset);
 
-    DateTime dateTime = DateTime.parse(dateNTime);
-    dateTime = dateTime.add(Duration(hours: int.parse(uc_offset)));
-    print('dateTime  => ' + dateTime.toString());
+      DateTime dateTime = DateTime.parse(dateNTime);
+      dateTime = dateTime.add(Duration(hours: int.parse(uc_offset)));
+      print('dateTime  => ' + dateTime.toString());
 
-    print("dateFormat.jm() => " + DateFormat.jm().format(dateTime));
-    print("dateFormat.jm() => " + DateFormat.Hm().format(dateTime));
+      print("dateFormat.jm() => " + DateFormat.jm().format(dateTime));
+      print("dateFormat.jm() => " + DateFormat.Hm().format(dateTime));
 
-    setState(() {
+      // date = DateFormat.MMMd().format(dateTime).toString();
       time = DateFormat.jm().format(dateTime).toString();
-    });
-    print('time : ' + time);
+      return time;
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("OOPS! There is a connection problem with Time Server"),
+        ),
+      );
+    }
+  }
+
+  Future<String?> getCurrentDate() async {
+    var url = Uri.parse('http://worldtimeapi.org/api/timezone/Asia/Karachi');
+    var response = await get(url);
+    var jsonResponse =
+        convert.jsonDecode(response.body) as Map<String, dynamic>;
+
+    if (response.statusCode == 200) {
+      var dateNTime = jsonResponse['datetime'];
+      print("response.body => " + jsonResponse['utc_offset']);
+      var uc_offset = jsonResponse['utc_offset'].toString().substring(1, 3);
+      print("response.body => " + uc_offset);
+
+      DateTime dateTime = DateTime.parse(dateNTime);
+      dateTime = dateTime.add(Duration(hours: int.parse(uc_offset)));
+      print('dateTime  => ' + dateTime.toString());
+
+      print("dateFormat.jm() => " + DateFormat.jm().format(dateTime));
+      print("dateFormat.jm() => " + DateFormat.Hm().format(dateTime));
+
+      date = DateFormat.MMMd().format(dateTime).toString();
+      return date;
+      // return time = DateFormat.jm().format(dateTime).toString();
+
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("OOPS! There is a connection problem with Time Server"),
+        ),
+      );
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    hitServer();
-  }
-
-  Future getInTime() async {
-    setState(
-      () {
-        attendenceInTime = time;
-      },
-    );
-  }
-
-  Future getStartTime() async {
-    setState(
-      () {
-        taskStaringTime = time;
-      },
-    );
-  }
-
-  Future getOutTime() async {
-    setState(
-      () {
-        attendenceOutTime = time;
-      },
-    );
-  }
-
-  Future getEndTime() async {
-    setState(
-      () {
-        taskEndingTime = time;
-      },
-    );
-  }
-
-  Future getDate() async {
-    setState(
-      () {
-        todaysDate = DateFormat.yMMMd().format(_time).toString();
-      },
-    );
-  }
-
-  //DateFormat.yMMMd().format(DateTime.now()).toString()
-
-  Future<void> addInTimeToFireStore() async {
-    final setAttendence = FirebaseFirestore.instance
-        .collection("Attendence")
-        .doc(FirebaseAuth.instance.currentUser!.email)
-        .collection(DateFormat.MMM().format(DateTime.now()).toString())
-        .doc(DateFormat.d().format(DateTime.now()).toString());
-
-    final user = {
-      'email': userInfo.email.toString(),
-      'date': DateFormat.yMMMd().format(DateTime.now()).toString(),
-      'user_id': userInfo.uid.toString(),
-      'attendence_inTime': attendenceInTime,
-      'attendence_outTime': attendenceOutTime,
-    };
-
-    setAttendence.set(user);
-  }
-
-  Future<void> addOutTimeToFireStore() async {
-    final setAttendence = FirebaseFirestore.instance
-        .collection("Attendence")
-        .doc(FirebaseAuth.instance.currentUser!.email)
-        .collection(DateFormat.MMM().format(DateTime.now()).toString())
-        .doc(DateFormat.d().format(DateTime.now()).toString());
-
-    final user = {
-      'attendence_outTime': attendenceOutTime,
-    };
-
-    setAttendence.update(user);
-  }
-
-  Future<void> addTaskToFireStore() async {
-    final setAttendence = FirebaseFirestore.instance
-        .collection("Task")
-        .doc(FirebaseAuth.instance.currentUser!.email)
-        .collection(DateFormat.MMM().format(DateTime.now()).toString())
-        .doc(DateFormat.d().format(DateTime.now()).toString());
-
-    final user = {
-      'email': userInfo.email.toString(),
-      'date': DateFormat.yMMMd().format(DateTime.now()).toString(),
-      'task_name': "🤔",
-      'task_progress': dropDownValue,
-      'task_startTime': taskStaringTime,
-      'task_endTime': taskEndingTime,
-    };
-
-    setAttendence.set(user);
-  }
-
-  Future<void> updateTaskToFireStore() async {
-    final setAttendence = FirebaseFirestore.instance
-        .collection("Task")
-        .doc(FirebaseAuth.instance.currentUser!.email)
-        .collection(DateFormat.MMM().format(DateTime.now()).toString())
-        .doc(DateFormat.d().format(DateTime.now()).toString());
-
-    final user = {
-      'task_endTime': taskEndingTime,
-      'task_progress': dropDownValue,
-    };
-
-    setAttendence.update(user);
+    getCurrentTime();
+    getCurrentDate();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.blue[900],
         title: _selectedIndex == 0
             ? const Text(
                 "Attendence System",
@@ -213,6 +145,7 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
           width: 100,
           height: 100,
           child: CircleAvatar(
+            backgroundColor: Color.fromARGB(255, 13, 71, 161),
             child: Image.asset(
               'assets/logo.png',
             ),
@@ -224,7 +157,7 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
         height: double.infinity,
         decoration: BoxDecoration(
           border: Border.all(
-            color: Colors.blue,
+            color: Color.fromARGB(255, 13, 71, 161),
             strokeAlign: StrokeAlign.inside,
             width: 10,
           ),
@@ -235,28 +168,39 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
             NavigationRail(
               elevation: 1,
               leading: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(80),
+                  gradient: const LinearGradient(
+                    colors: [
+                      MyColors.peach,
+                      Color.fromARGB(237, 192, 167, 254),
+                      MyColors.peach,
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                ),
                 height: 50,
                 padding: const EdgeInsets.all(5),
                 margin: const EdgeInsets.all(5),
-                child: ElevatedButton.icon(
+                child: TextButton.icon(
                   onPressed: () async {
                     auth.signOut();
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    // side: BorderSide(color: Colors.yellow, width: 5),
-                    textStyle: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 25,
-                        fontStyle: FontStyle.normal),
-                    shape: const BeveledRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10))),
-                  ),
+                  style: TextButton.styleFrom(elevation: 10),
                   icon: const Icon(
                     Icons.logout,
                     size: 30,
+                    color: Colors.white,
                   ),
-                  label: const Text("Logout"),
+                  label: const Text(
+                    "Logout",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
               selectedIndex: _selectedIndex,
@@ -266,7 +210,7 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                 });
               },
               labelType: NavigationRailLabelType.selected,
-              backgroundColor: Colors.blue,
+              backgroundColor: const Color.fromARGB(255, 13, 71, 161),
               destinations: const <NavigationRailDestination>[
                 // navigation destinations
                 NavigationRailDestination(
@@ -333,10 +277,22 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     //Attendence in Time
-                                    SizedBox(
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(80),
+                                        gradient: const LinearGradient(
+                                          colors: [
+                                            MyColors.peach,
+                                            Color.fromARGB(237, 192, 167, 254),
+                                            MyColors.peach,
+                                          ],
+                                          begin: Alignment.centerLeft,
+                                          end: Alignment.centerRight,
+                                        ),
+                                      ),
                                       width: 200,
                                       height: 50,
-                                      child: ElevatedButton(
+                                      child: TextButton(
                                         onPressed: () {
                                           getInTime();
                                           setState(() {
@@ -344,34 +300,54 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                             attendenceOutTime = "";
                                           });
                                         },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.blue,
-                                          // side: BorderSide(color: Colors.yellow, width: 5),
-                                          textStyle: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25,
-                                              fontStyle: FontStyle.normal),
-                                          shape: const BeveledRectangleBorder(
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(10))),
-                                        ),
-                                        child: Text(
-                                          attendenceInTime == ''
-                                              ? "Pick in Time   "
-                                              : attendenceInTime,
-                                          style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold),
-                                        ),
+                                        child: FutureBuilder(
+                                            future: getCurrentTime(),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.connectionState ==
+                                                  ConnectionState.waiting) {
+                                                return const CircularProgressIndicator(
+                                                  color: Colors.white,
+                                                );
+                                              }
+                                              if (snapshot.connectionState ==
+                                                  ConnectionState.none) {
+                                                return const Text(
+                                                    'No connection!');
+                                              }
+                                              if (snapshot.hasError) {
+                                                return const Text('Error');
+                                              }
+                                              return Text(
+                                                attendenceInTime == ''
+                                                    ? "In Time   "
+                                                    : snapshot.data!.toString(),
+                                                style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              );
+                                            }),
                                       ),
                                     ),
-                                    const SizedBox(width: 10),
+                                    const SizedBox(width: 20),
                                     //Attendence out Time
-                                    SizedBox(
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(80),
+                                        gradient: const LinearGradient(
+                                          colors: [
+                                            MyColors.peach,
+                                            Color.fromARGB(237, 192, 167, 254),
+                                            MyColors.peach,
+                                          ],
+                                          begin: Alignment.centerLeft,
+                                          end: Alignment.centerRight,
+                                        ),
+                                      ),
                                       width: 200,
                                       height: 50,
-                                      child: ElevatedButton(
+                                      child: TextButton(
                                         onPressed: () {
                                           getOutTime();
                                           setState(() {
@@ -379,26 +355,35 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                             attendenceInTime = "";
                                           });
                                         },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.blue,
-                                          // side: BorderSide(color: Colors.yellow, width: 5),
-                                          textStyle: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25,
-                                              fontStyle: FontStyle.normal),
-                                          shape: const BeveledRectangleBorder(
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(10))),
-                                        ),
-                                        child: Text(
-                                          attendenceOutTime == ''
-                                              ? "Pick out Time"
-                                              : attendenceOutTime,
-                                          style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold),
-                                        ),
+                                        child: FutureBuilder(
+                                            future: getCurrentTime(),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.connectionState ==
+                                                  ConnectionState.waiting) {
+                                                return const CircularProgressIndicator(
+                                                  color: Colors.white,
+                                                );
+                                              }
+                                              if (snapshot.connectionState ==
+                                                  ConnectionState.none) {
+                                                return const Text(
+                                                    'No connection!');
+                                              }
+                                              if (snapshot.hasError) {
+                                                return const Text('Error');
+                                              }
+
+                                              return Text(
+                                                attendenceOutTime == ''
+                                                    ? "Out Time"
+                                                    : snapshot.data!.toString(),
+                                                style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              );
+                                            }),
                                       ),
                                     ),
                                   ],
@@ -408,10 +393,22 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                               //submit button
                               attSubmit == false
                                   ? Container(
-                                      width: 400,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(80),
+                                        gradient: const LinearGradient(
+                                          colors: [
+                                            MyColors.peach,
+                                            Color.fromARGB(237, 192, 167, 254),
+                                            MyColors.peach,
+                                          ],
+                                          begin: Alignment.centerLeft,
+                                          end: Alignment.centerRight,
+                                        ),
+                                      ),
+                                      width: 420,
                                       height: 50,
                                       margin: const EdgeInsets.only(top: 10),
-                                      child: ElevatedButton(
+                                      child: TextButton(
                                         onPressed: () {
                                           addInTimeToFireStore();
                                           setState(() {
@@ -419,30 +416,32 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                             attendenceOutTime = '';
                                           });
                                         },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.blue,
-                                          // side: BorderSide(color: Colors.yellow, width: 5),
-                                          textStyle: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25,
-                                              fontStyle: FontStyle.normal),
-                                          shape: const BeveledRectangleBorder(
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(10))),
-                                        ),
                                         child: const Text(
                                           "Submit In-Time",
                                           style: TextStyle(
+                                              color: Colors.white,
                                               fontSize: 20,
                                               fontWeight: FontWeight.bold),
                                         ),
                                       ),
                                     )
                                   : Container(
-                                      width: 400,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(80),
+                                        gradient: const LinearGradient(
+                                          colors: [
+                                            MyColors.peach,
+                                            Color.fromARGB(237, 192, 167, 254),
+                                            MyColors.peach,
+                                          ],
+                                          begin: Alignment.centerLeft,
+                                          end: Alignment.centerRight,
+                                        ),
+                                      ),
+                                      width: 420,
                                       height: 50,
                                       margin: const EdgeInsets.only(top: 10),
-                                      child: ElevatedButton(
+                                      child: TextButton(
                                         onPressed: () {
                                           addOutTimeToFireStore();
                                           setState(() {
@@ -450,20 +449,10 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                             attendenceOutTime = '';
                                           });
                                         },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.blue,
-                                          // side: BorderSide(color: Colors.yellow, width: 5),
-                                          textStyle: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25,
-                                              fontStyle: FontStyle.normal),
-                                          shape: const BeveledRectangleBorder(
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(10))),
-                                        ),
                                         child: const Text(
                                           "Submit Out-Time",
                                           style: TextStyle(
+                                              color: Colors.white,
                                               fontSize: 20,
                                               fontWeight: FontWeight.bold),
                                         ),
@@ -479,144 +468,171 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                         ///                     ///
                         ///////////////////////////
 
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(),
-                          ),
-                          child: Column(
-                            children: [
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.7,
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: const <Widget>[
-                                    Text(
-                                      "Email",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      "Date",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      "In Time",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      "Out Time",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                        Column(
+                          children: [
+                            Container(
+                              height: MediaQuery.of(context).size.height * 0.6,
+                              padding: const EdgeInsets.all(5),
+                              margin: const EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(),
                               ),
-                              Container(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.50,
-                                padding: const EdgeInsets.all(5),
-                                margin: const EdgeInsets.all(5),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue[100],
-                                  border: Border.all(),
-                                ),
-                                child: StreamBuilder(
-                                  stream: FirebaseFirestore.instance
-                                      .collection("Attendence")
-                                      .doc(FirebaseAuth
-                                          .instance.currentUser!.email)
-                                      .collection(DateFormat.MMM()
-                                          .format(DateTime.now())
-                                          .toString())
-                                      .snapshots(),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.hasError) {
-                                      return const Center(
-                                          child: Text("Something went wrong"));
-                                    }
+                              child: StreamBuilder(
+                                stream: FirebaseFirestore.instance
+                                    .collection("Attendence")
+                                    .doc(FirebaseAuth
+                                        .instance.currentUser!.email)
+                                    .collection(DateFormat.MMM()
+                                        .format(DateTime.now())
+                                        .toString())
+                                    .snapshots(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasError) {
+                                    return const Center(
+                                        child: Text("Something went wrong"));
+                                  }
 
-                                    if (!snapshot.hasData) {
-                                      return const Center(
-                                          child: CircularProgressIndicator());
-                                    }
+                                  if (!snapshot.hasData) {
+                                    return const Center(
+                                        child: CircularProgressIndicator(
+                                      color: MyColors.peach,
+                                    ));
+                                  }
 
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return const Center(
-                                          child: CircularProgressIndicator());
-                                    }
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const Center(
+                                        child: CircularProgressIndicator(
+                                      color: MyColors.peach,
+                                    ));
+                                  }
 
-                                    return ListView.builder(
-                                      itemCount: snapshot.data!.docs.length,
-                                      itemBuilder: (context, index) {
-                                        if (snapshot.hasData) {
-                                          return Container(
-                                            padding: const EdgeInsets.all(8),
-                                            margin: const EdgeInsets.all(5),
-                                            decoration: BoxDecoration(
-                                              color: Colors.blue,
-                                              border: Border.all(),
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              children: [
-                                                Text(
-                                                  snapshot.data!.docs[index]
-                                                      ['email'],
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text(
-                                                  snapshot.data!.docs[index]
-                                                      ['date'],
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text(
-                                                  snapshot.data!.docs[index]
-                                                      ['attendence_inTime'],
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text(
-                                                  snapshot.data!.docs[index]
-                                                      ['attendence_outTime'],
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
+                                  return ListView.builder(
+                                    itemCount: snapshot.data!.docs.length,
+                                    itemBuilder: (context, index) {
+                                      if (snapshot.hasData) {
+                                        return Container(
+                                          decoration: const BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                MyColors.peach,
+                                                Color.fromARGB(
+                                                    236, 144, 102, 251),
+                                                MyColors.peach,
                                               ],
+                                              begin: Alignment.centerLeft,
+                                              end: Alignment.centerRight,
                                             ),
-                                          );
-                                        }
-                                        return const Center(
-                                            child: CircularProgressIndicator());
-                                      },
-                                    );
-                                  },
-                                ),
+                                          ),
+                                          padding: const EdgeInsets.all(8),
+                                          margin: const EdgeInsets.all(5),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            children: [
+                                              Column(
+                                                children: [
+                                                  const Text(
+                                                    "Email",
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    snapshot.data!.docs[index]
+                                                        ['email'],
+                                                    style: const TextStyle(
+                                                        fontSize: 20,
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ],
+                                              ),
+                                              Column(
+                                                children: [
+                                                  const Text(
+                                                    "Date",
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    snapshot.data!.docs[index]
+                                                        ['date'],
+                                                    style: const TextStyle(
+                                                        fontSize: 20,
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ],
+                                              ),
+                                              Column(
+                                                children: [
+                                                  const Text(
+                                                    "In Time",
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    snapshot.data!.docs[index]
+                                                        ['attendence_inTime'],
+                                                    style: const TextStyle(
+                                                        fontSize: 20,
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ],
+                                              ),
+                                              Column(
+                                                children: [
+                                                  const Text(
+                                                    "Out Time",
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    snapshot.data!.docs[index]
+                                                        ['attendence_outTime'],
+                                                    style: const TextStyle(
+                                                        fontSize: 20,
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }
+                                      return const Center(
+                                          child: CircularProgressIndicator(
+                                        color: MyColors.peach,
+                                      ));
+                                    },
+                                  );
+                                },
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -638,185 +654,202 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              // Task Starting Time...
-                              Row(
+                              // Task Starting Date...
+                              Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Column(
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      SizedBox(
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(80),
+                                          gradient: const LinearGradient(
+                                            colors: [
+                                              MyColors.peach,
+                                              Color.fromARGB(
+                                                  237, 192, 167, 254),
+                                              MyColors.peach,
+                                            ],
+                                            begin: Alignment.centerLeft,
+                                            end: Alignment.centerRight,
+                                          ),
+                                        ),
                                         height: 50,
                                         width: 200,
-                                        child: ElevatedButton(
+                                        child: TextButton(
                                           onPressed: () {
-                                            getStartTime();
+                                            getStartDate();
                                             setState(() {
-                                              taskEndingTime = "";
+                                              taskEndDate = "";
                                               taskSubmit = false;
                                             });
                                           },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.blue,
-                                            // side: BorderSide(color: Colors.yellow, width: 5),
-                                            textStyle: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 25,
-                                                fontStyle: FontStyle.normal),
-                                            shape: const BeveledRectangleBorder(
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(10))),
-                                          ),
-                                          child: taskStaringTime == ''
-                                              ? const Text(
-                                                  "Pick Start Time",
-                                                  style: TextStyle(
+                                          child: FutureBuilder(
+                                              future: getCurrentDate(),
+                                              builder: (context, snapshot) {
+                                                if (snapshot.connectionState ==
+                                                    ConnectionState.waiting) {
+                                                  return const CircularProgressIndicator(
+                                                    color: Colors.white,
+                                                  );
+                                                }
+                                                if (snapshot.connectionState ==
+                                                    ConnectionState.none) {
+                                                  return const Text(
+                                                      'No connection!');
+                                                }
+                                                if (snapshot.hasError) {
+                                                  return const Text('Error');
+                                                }
+                                                return Text(
+                                                  taskStartDate == ''
+                                                      ? "Starting Date"
+                                                      : taskStartDate,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
                                                     fontSize: 20,
                                                     fontWeight: FontWeight.bold,
                                                   ),
-                                                )
-                                              : Text(
-                                                  taskStaringTime,
-                                                  style: const TextStyle(
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
+                                                );
+                                              }),
                                         ),
                                       ),
-                                      const SizedBox(height: 10),
-                                      SizedBox(
+                                      const SizedBox(width: 20),
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(80),
+                                          gradient: const LinearGradient(
+                                            colors: [
+                                              MyColors.peach,
+                                              Color.fromARGB(
+                                                  237, 192, 167, 254),
+                                              MyColors.peach,
+                                            ],
+                                            begin: Alignment.centerLeft,
+                                            end: Alignment.centerRight,
+                                          ),
+                                        ),
                                         height: 50,
                                         width: 200,
-                                        child: ElevatedButton(
+                                        child: TextButton(
                                           onPressed: () {
-                                            getEndTime();
+                                            getEndDate();
                                             setState(
                                               () {
-                                                taskStaringTime = '';
+                                                taskStartDate = '';
                                                 taskSubmit = true;
                                               },
                                             );
                                           },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.blue,
-                                            // side: BorderSide(color: Colors.yellow, width: 5),
-                                            textStyle: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 25,
-                                                fontStyle: FontStyle.normal),
-                                            shape: const BeveledRectangleBorder(
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(10))),
-                                          ),
-                                          child: taskEndingTime == ""
-                                              ? const Text(
-                                                  "Pick End Time",
-                                                  style: TextStyle(
+                                          child: FutureBuilder(
+                                              future: getCurrentDate(),
+                                              builder: (context, snapshot) {
+                                                if (snapshot.connectionState ==
+                                                    ConnectionState.waiting) {
+                                                  return const CircularProgressIndicator(
+                                                    color: Colors.white,
+                                                  );
+                                                }
+                                                if (snapshot.connectionState ==
+                                                    ConnectionState.none) {
+                                                  return const Text(
+                                                      'No connection!');
+                                                }
+                                                if (snapshot.hasError) {
+                                                  return const Text('Error');
+                                                }
+                                                return Text(
+                                                  taskEndDate == ""
+                                                      ? "Ending Date"
+                                                      : taskEndDate,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
                                                     fontSize: 20,
                                                     fontWeight: FontWeight.bold,
                                                   ),
-                                                )
-                                              : Text(
-                                                  taskEndingTime,
-                                                  style: const TextStyle(
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
+                                                );
+                                              }),
                                         ),
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(width: 50),
-                                  DropdownButton(
-                                    focusColor: Colors.blue[100],
-                                    hint: dropDownValue.isEmpty
-                                        ? const Text("Task Status")
-                                        : Text(dropDownValue),
-                                    items: _locations.map((String val) {
-                                      return DropdownMenuItem<String>(
-                                        value: val,
-                                        child: Text(val),
-                                      );
-                                    }).toList(),
-                                    onChanged: (val) {
-                                      setState(
-                                        () {
-                                          dropDownValue = val!;
-                                        },
-                                      );
-                                    },
-                                  ),
+
                                   //submit button
                                   const SizedBox(width: 50),
                                   taskSubmit == false
                                       ? Container(
-                                          width: 220,
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(80),
+                                            gradient: const LinearGradient(
+                                              colors: [
+                                                MyColors.peach,
+                                                Color.fromARGB(
+                                                    237, 192, 167, 254),
+                                                MyColors.peach,
+                                              ],
+                                              begin: Alignment.centerLeft,
+                                              end: Alignment.centerRight,
+                                            ),
+                                          ),
+                                          width: 420,
                                           height: 50,
                                           margin:
                                               const EdgeInsets.only(top: 10),
-                                          child: ElevatedButton(
+                                          child: TextButton(
                                             onPressed: () {
                                               setState(() {
                                                 addTaskToFireStore();
                                                 taskSubmit = true;
-                                                taskStaringTime = '';
-                                                taskEndingTime = '';
+                                                taskStartDate = '';
+                                                taskEndDate = '';
                                               });
                                             },
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.blue,
-                                              // side: BorderSide(color: Colors.yellow, width: 5),
-                                              textStyle: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 25,
-                                                  fontStyle: FontStyle.normal),
-                                              shape:
-                                                  const BeveledRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.all(
-                                                              Radius.circular(
-                                                                  10))),
-                                            ),
                                             child: const Text(
-                                              "Submit Start Time",
+                                              "Submit Start Date",
                                               style: TextStyle(
+                                                  color: Colors.white,
                                                   fontSize: 20,
                                                   fontWeight: FontWeight.bold),
                                             ),
                                           ),
                                         )
                                       : Container(
-                                          width: 220,
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(80),
+                                            gradient: const LinearGradient(
+                                              colors: [
+                                                MyColors.peach,
+                                                Color.fromARGB(
+                                                    237, 192, 167, 254),
+                                                MyColors.peach,
+                                              ],
+                                              begin: Alignment.centerLeft,
+                                              end: Alignment.centerRight,
+                                            ),
+                                          ),
+                                          width: 420,
                                           height: 50,
                                           margin:
                                               const EdgeInsets.only(top: 10),
-                                          child: ElevatedButton(
+                                          child: TextButton(
                                             onPressed: () {
                                               setState(() {
                                                 updateTaskToFireStore();
                                                 taskSubmit = false;
-                                                taskStaringTime = '';
-                                                taskEndingTime = '';
+                                                taskStartDate = '';
+                                                taskEndDate = '';
                                               });
                                             },
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.blue,
-                                              // side: BorderSide(color: Colors.yellow, width: 5),
-                                              textStyle: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 25,
-                                                  fontStyle: FontStyle.normal),
-                                              shape:
-                                                  const BeveledRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.all(
-                                                              Radius.circular(
-                                                                  10))),
-                                            ),
                                             child: const Text(
-                                              "Submit End Time",
+                                              "Submit End Date",
                                               style: TextStyle(
+                                                  color: Colors.white,
                                                   fontSize: 20,
                                                   fontWeight: FontWeight.bold),
                                             ),
@@ -834,175 +867,284 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                         ///                     ///
                         ///////////////////////////
 
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(),
-                          ),
-                          child: Column(
-                            children: [
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.7,
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: const <Widget>[
-                                    Text(
-                                      "Email",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      "Date",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      "Task-Name",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      "Start Time",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      "End Time",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      "Progress",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                        Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: const <Widget>[],
+                            ),
+                            Container(
+                              height: MediaQuery.of(context).size.height * 0.6,
+                              padding: const EdgeInsets.all(5),
+                              margin: const EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(),
                               ),
-                              Container(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.50,
-                                padding: const EdgeInsets.all(5),
-                                margin: const EdgeInsets.all(5),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue[100],
-                                  border: Border.all(),
-                                ),
-                                child: StreamBuilder(
-                                  stream: FirebaseFirestore.instance
-                                      .collection("Task")
-                                      .doc(FirebaseAuth
-                                          .instance.currentUser!.email)
-                                      .collection(DateFormat.MMM()
-                                          .format(DateTime.now())
-                                          .toString())
-                                      .snapshots(),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.hasError) {
-                                      return const Center(
-                                          child: Text("Something went wrong"));
-                                    }
+                              child: StreamBuilder(
+                                stream: FirebaseFirestore.instance
+                                    .collection("Task")
+                                    .doc(FirebaseAuth
+                                        .instance.currentUser!.email)
+                                    .collection(DateFormat.MMM()
+                                        .format(DateTime.now())
+                                        .toString())
+                                    .snapshots(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasError) {
+                                    return const Center(
+                                        child: Text("Something went wrong"));
+                                  }
 
-                                    if (!snapshot.hasData) {
-                                      return const Center(
-                                        child: CircularProgressIndicator(),
-                                      );
-                                    }
-
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return const Center(
-                                          child: CircularProgressIndicator());
-                                    }
-
-                                    return ListView.builder(
-                                      itemCount: snapshot.data!.docs.length,
-                                      itemBuilder: (context, index) {
-                                        if (snapshot.hasData) {
-                                          return Container(
-                                            padding: const EdgeInsets.all(8),
-                                            margin: const EdgeInsets.all(5),
-                                            decoration: BoxDecoration(
-                                              color: Colors.blue[400],
-                                              border: Border.all(),
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              children: [
-                                                Text(
-                                                  snapshot.data!.docs[index]
-                                                      ['email'],
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text(
-                                                  snapshot.data!.docs[index]
-                                                      ['date'],
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text(
-                                                  snapshot.data!.docs[index]
-                                                      ['task_name'],
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text(
-                                                  snapshot.data!.docs[index]
-                                                      ['task_startTime'],
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text(
-                                                  snapshot.data!.docs[index]
-                                                      ['task_endTime'],
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text(
-                                                  snapshot.data!.docs[index]
-                                                      ['task_progress'],
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        }
-                                        return const Center(
-                                            child: CircularProgressIndicator());
-                                      },
+                                  if (!snapshot.hasData) {
+                                    return const Center(
+                                      child: CircularProgressIndicator(
+                                        color: MyColors.peach,
+                                      ),
                                     );
-                                  },
-                                ),
+                                  }
+
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const Center(
+                                        child: CircularProgressIndicator(
+                                      color: MyColors.peach,
+                                    ));
+                                  }
+
+                                  return ListView.builder(
+                                    itemCount: snapshot.data!.docs.length,
+                                    itemBuilder: (context, index) {
+                                      if (snapshot.hasData) {
+                                        return Container(
+                                          padding: const EdgeInsets.all(8),
+                                          margin: const EdgeInsets.all(5),
+                                          decoration: const BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                MyColors.peach,
+                                                Color.fromARGB(
+                                                    236, 146, 103, 253),
+                                                MyColors.peach,
+                                              ],
+                                              begin: Alignment.centerLeft,
+                                              end: Alignment.centerRight,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            children: [
+                                              Column(
+                                                children: [
+                                                  const Text(
+                                                    "Email",
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    snapshot.data!.docs[index]
+                                                        ['email'],
+                                                    style: const TextStyle(
+                                                        fontSize: 20,
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ],
+                                              ),
+                                              Column(
+                                                children: [
+                                                  const Text(
+                                                    "Task-Name",
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    snapshot.data!.docs[index]
+                                                        ['task_name'],
+                                                    style: const TextStyle(
+                                                        fontSize: 20,
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ],
+                                              ),
+                                              Column(
+                                                children: [
+                                                  const Text(
+                                                    "Starting Date",
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    snapshot.data!.docs[index]
+                                                        ['task_startDate'],
+                                                    style: const TextStyle(
+                                                        fontSize: 20,
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ],
+                                              ),
+                                              Column(
+                                                children: [
+                                                  const Text(
+                                                    "Ending Date",
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    snapshot.data!.docs[index]
+                                                        ['task_endDate'],
+                                                    style: const TextStyle(
+                                                        fontSize: 20,
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ],
+                                              ),
+                                              Column(
+                                                children: [
+                                                  const Text(
+                                                    "Progress",
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    snapshot.data!.docs[index]
+                                                        ['task_progress'],
+                                                    style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 20,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ],
+                                              ),
+                                              Visibility(
+                                                visible: snapshot.data!
+                                                                .docs[index]
+                                                            ['date'] ==
+                                                        DateFormat.yMMMd()
+                                                            .format(
+                                                                DateTime.now())
+                                                    ? true
+                                                    : false,
+                                                child: Column(
+                                                  children: [
+                                                    DropdownButton(
+                                                      key: sKey,
+                                                      focusColor: Colors
+                                                          .deepPurple[300],
+                                                      dropdownColor: Colors
+                                                          .deepPurple[300],
+                                                      iconEnabledColor:
+                                                          Colors.white,
+                                                      iconDisabledColor:
+                                                          Colors.white,
+                                                      hint: dropDownValue
+                                                              .isEmpty
+                                                          ? const Text(
+                                                              "Task Status",
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .white),
+                                                            )
+                                                          : Text(dropDownValue),
+                                                      items: _locations
+                                                          .map((String val) {
+                                                        return DropdownMenuItem<
+                                                            String>(
+                                                          value: val,
+                                                          child: Text(val),
+                                                        );
+                                                      }).toList(),
+                                                      onChanged: (val) {
+                                                        setState(
+                                                          () {
+                                                            dropDownValue =
+                                                                val!;
+                                                          },
+                                                        );
+                                                      },
+                                                    ),
+                                                    Container(
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(80),
+                                                        gradient:
+                                                            const LinearGradient(
+                                                          colors: [
+                                                            MyColors.peach,
+                                                            Color.fromARGB(237,
+                                                                192, 167, 254),
+                                                            MyColors.peach,
+                                                          ],
+                                                          begin: Alignment
+                                                              .centerLeft,
+                                                          end: Alignment
+                                                              .centerRight,
+                                                        ),
+                                                      ),
+                                                      child: TextButton(
+                                                        onPressed: () {
+                                                          updateProgressToFireStore();
+                                                        },
+                                                        style: TextButton
+                                                            .styleFrom(
+                                                                elevation: 10),
+                                                        child: const Text(
+                                                          "Submit",
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }
+                                      return const Center(
+                                          child: CircularProgressIndicator(
+                                        color: MyColors.peach,
+                                      ));
+                                    },
+                                  );
+                                },
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -1011,5 +1153,126 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
         ),
       ),
     );
+  }
+
+  Future getInTime() async {
+    setState(
+      () {
+        attendenceInTime = time!;
+      },
+    );
+  }
+
+  Future getStartDate() async {
+    setState(
+      () {
+        taskStartDate = date!;
+      },
+    );
+  }
+
+  Future getOutTime() async {
+    setState(
+      () {
+        attendenceOutTime = time!;
+      },
+    );
+  }
+
+  Future getEndDate() async {
+    setState(
+      () {
+        taskEndDate = date!;
+      },
+    );
+  }
+
+  Future getDate() async {
+    setState(
+      () {
+        todaysDate = DateFormat.yMMMd().format(_time).toString();
+      },
+    );
+  }
+
+  //DateFormat.yMMMd().format(DateTime.now()).toString()
+
+  Future<void> addInTimeToFireStore() async {
+    final setAttendence = FirebaseFirestore.instance
+        .collection("Attendence")
+        .doc(FirebaseAuth.instance.currentUser!.email)
+        .collection(DateFormat.MMM().format(DateTime.now()).toString())
+        .doc(DateFormat.d().format(DateTime.now()).toString());
+
+    final user = {
+      'email': userInfo.email.toString(),
+      'date': DateFormat.yMMMd().format(DateTime.now()).toString(),
+      'user_id': userInfo.uid.toString(),
+      'attendence_inTime': attendenceInTime,
+      'attendence_outTime': attendenceOutTime,
+    };
+
+    setAttendence.set(user);
+  }
+
+  Future<void> addOutTimeToFireStore() async {
+    final setAttendence = FirebaseFirestore.instance
+        .collection("Attendence")
+        .doc(FirebaseAuth.instance.currentUser!.email)
+        .collection(DateFormat.MMM().format(DateTime.now()).toString())
+        .doc(DateFormat.d().format(DateTime.now()).toString());
+
+    final user = {
+      'attendence_outTime': attendenceOutTime,
+    };
+
+    setAttendence.update(user);
+  }
+
+  Future<void> addTaskToFireStore() async {
+    final setAttendence = FirebaseFirestore.instance
+        .collection("Task")
+        .doc(FirebaseAuth.instance.currentUser!.email)
+        .collection(DateFormat.MMM().format(DateTime.now()).toString())
+        .doc(DateFormat.d().format(DateTime.now()).toString());
+
+    final user = {
+      'email': userInfo.email.toString(),
+      'date': DateFormat.yMMMd().format(DateTime.now()).toString(),
+      'task_name': "🤔",
+      'task_progress': "🤔",
+      'task_startDate': taskStartDate,
+      'task_endDate': taskEndDate,
+    };
+
+    setAttendence.set(user);
+  }
+
+  Future<void> updateTaskToFireStore() async {
+    final setAttendence = FirebaseFirestore.instance
+        .collection("Task")
+        .doc(FirebaseAuth.instance.currentUser!.email)
+        .collection(DateFormat.MMM().format(DateTime.now()).toString())
+        .doc(DateFormat.d().format(DateTime.now()).toString());
+
+    final user = {
+      'task_endDate': taskEndDate,
+    };
+
+    setAttendence.update(user);
+  }
+
+  Future<void> updateProgressToFireStore() async {
+    final setAttendence = FirebaseFirestore.instance
+        .collection("Task")
+        .doc(FirebaseAuth.instance.currentUser!.email)
+        .collection(DateFormat.MMM().format(DateTime.now()).toString())
+        .doc(DateFormat.d().format(DateTime.now()).toString());
+
+    final user = {
+      'task_progress': dropDownValue,
+    };
+
+    setAttendence.update(user);
   }
 }

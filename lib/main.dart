@@ -1,12 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:web_app/global/colors.dart';
 
 import 'pages/home_page.dart';
 import 'pages/user_panel.dart';
-
-import 'package:ntp/ntp.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,7 +43,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primaryColor: Colors.blue[900],
         textTheme: Theme.of(context).textTheme.apply(fontFamily: 'Open Sans'),
       ),
       home: Scaffold(
@@ -58,11 +56,10 @@ class _MyAppState extends State<MyApp> {
               return const Center(child: Text("No Internet Connection"));
             } else if (snapshot.hasError) {
               return const Center(child: Text("Something has wrong"));
-            } else if (snapshot.hasData) {
-              return const UserPanelScreen();
-            } else {
+            } else if (!snapshot.hasData) {
               return const HomePage();
             }
+            return const UserPanelScreen();
           },
         ),
       ),

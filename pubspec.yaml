@@ -18,9 +18,7 @@ dependencies:
   firebase_auth: ^3.10.0
   cloud_firestore: ^3.4.9
   responsive_builder: ^0.4.3
-  shared_preferences: ^2.0.15
-  # For Network Time Protocol...
-  ntp: ^2.0.0     
+  shared_preferences: ^2.0.15   
   # for time formating...
   intl: ^0.17.0 
   # For email Validator

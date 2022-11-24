@@ -32,9 +32,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color.fromARGB(255, 118, 79, 185),
-                  Color.fromARGB(255, 165, 150, 155),
-                  Color.fromARGB(255, 128, 97, 181),
+                  Color.fromARGB(255, 146, 139, 139),
+                  Color.fromARGB(255, 97, 96, 96),
+                  Color.fromARGB(255, 146, 139, 139),
                 ],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
@@ -164,9 +164,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     borderRadius: BorderRadius.circular(80),
                     gradient: const LinearGradient(
                       colors: [
-                        Colors.deepPurple,
-                        Colors.pink,
-                        Colors.deepPurple,
+                        Colors.lightGreen,
+                        Colors.green,
+                        Colors.lightGreen,
                       ],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
