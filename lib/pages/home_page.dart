@@ -18,9 +18,9 @@ class _HomePageState extends State<HomePage> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color.fromARGB(255, 21, 97, 159),
-              Color.fromARGB(255, 46, 152, 238),
-              Color.fromARGB(255, 11, 94, 161),
+              Color.fromARGB(255, 189, 192, 194),
+              Color.fromARGB(255, 105, 130, 150),
+              Color.fromARGB(255, 183, 187, 191),
             ],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,

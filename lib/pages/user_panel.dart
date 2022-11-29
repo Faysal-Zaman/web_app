@@ -1,11 +1,11 @@
 import 'dart:html';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'dart:convert' as convert;
 
 import '../auth/auth.dart';
 import '../global/colors.dart';
@@ -47,67 +47,68 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
 
   /// for getting the actual time via api
 
-  Future<String?> getCurrentTime() async {
+  Future<String> getCurrentTime() async {
     var url = Uri.parse('http://worldtimeapi.org/api/timezone/Asia/Karachi');
-    var response = await get(url);
-    var jsonResponse =
-        convert.jsonDecode(response.body) as Map<String, dynamic>;
+    var response = await http.get(url);
+    var jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
 
     if (response.statusCode == 200) {
       var dateNTime = jsonResponse['datetime'];
-      print("response.body => " + jsonResponse['utc_offset']);
-      var uc_offset = jsonResponse['utc_offset'].toString().substring(1, 3);
-      print("response.body => " + uc_offset);
+      // ignore: prefer_interpolation_to_compose_strings
+      debugPrint("response.body => " + jsonResponse['utc_offset']);
+      var ucOffset = jsonResponse['utc_offset'].toString().substring(1, 3);
+      debugPrint("response.body => $ucOffset");
 
       DateTime dateTime = DateTime.parse(dateNTime);
-      dateTime = dateTime.add(Duration(hours: int.parse(uc_offset)));
-      print('dateTime  => ' + dateTime.toString());
+      dateTime = dateTime.add(Duration(hours: int.parse(ucOffset)));
+      debugPrint('dateTime  => $dateTime');
 
-      print("dateFormat.jm() => " + DateFormat.jm().format(dateTime));
-      print("dateFormat.jm() => " + DateFormat.Hm().format(dateTime));
+      debugPrint("dateFormat.jm() => ${DateFormat.jm().format(dateTime)}");
+      debugPrint("dateFormat.jm() => ${DateFormat.Hm().format(dateTime)}");
 
       // date = DateFormat.MMMd().format(dateTime).toString();
       time = DateFormat.jm().format(dateTime).toString();
-      return time;
     } else {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("OOPS! There is a connection problem with Time Server"),
         ),
       );
     }
+    return time!;
   }
 
-  Future<String?> getCurrentDate() async {
+  Future<String> getCurrentDate() async {
     var url = Uri.parse('http://worldtimeapi.org/api/timezone/Asia/Karachi');
-    var response = await get(url);
-    var jsonResponse =
-        convert.jsonDecode(response.body) as Map<String, dynamic>;
+    var response = await http.get(url);
+    var jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
 
     if (response.statusCode == 200) {
       var dateNTime = jsonResponse['datetime'];
-      print("response.body => " + jsonResponse['utc_offset']);
-      var uc_offset = jsonResponse['utc_offset'].toString().substring(1, 3);
-      print("response.body => " + uc_offset);
+      // ignore: prefer_interpolation_to_compose_strings
+      debugPrint("response.body => " + jsonResponse['utc_offset']);
+      var ucOffset = jsonResponse['utc_offset'].toString().substring(1, 3);
+      debugPrint("response.body => $ucOffset");
 
       DateTime dateTime = DateTime.parse(dateNTime);
-      dateTime = dateTime.add(Duration(hours: int.parse(uc_offset)));
-      print('dateTime  => ' + dateTime.toString());
+      dateTime = dateTime.add(Duration(hours: int.parse(ucOffset)));
+      debugPrint('dateTime  => $dateTime');
 
-      print("dateFormat.jm() => " + DateFormat.jm().format(dateTime));
-      print("dateFormat.jm() => " + DateFormat.Hm().format(dateTime));
+      debugPrint("dateFormat.jm() => ${DateFormat.jm().format(dateTime)}");
+      debugPrint("dateFormat.jm() => ${DateFormat.Hm().format(dateTime)}");
 
       date = DateFormat.MMMd().format(dateTime).toString();
-      return date;
       // return time = DateFormat.jm().format(dateTime).toString();
-
     } else {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("OOPS! There is a connection problem with Time Server"),
         ),
       );
     }
+    return date!;
   }
 
   @override
@@ -145,7 +146,7 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
           width: 100,
           height: 100,
           child: CircleAvatar(
-            backgroundColor: Color.fromARGB(255, 13, 71, 161),
+            backgroundColor: const Color.fromARGB(255, 13, 71, 161),
             child: Image.asset(
               'assets/logo.png',
             ),
@@ -157,7 +158,7 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
         height: double.infinity,
         decoration: BoxDecoration(
           border: Border.all(
-            color: Color.fromARGB(255, 13, 71, 161),
+            color: const Color.fromARGB(255, 13, 71, 161),
             strokeAlign: StrokeAlign.inside,
             width: 10,
           ),
@@ -486,6 +487,8 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                     .collection(DateFormat.MMM()
                                         .format(DateTime.now())
                                         .toString())
+                                    .orderBy("attendence_inTime",
+                                        descending: true)
                                     .snapshots(),
                                 builder: (context, snapshot) {
                                   if (snapshot.hasError) {
@@ -889,6 +892,7 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                     .collection(DateFormat.MMM()
                                         .format(DateTime.now())
                                         .toString())
+                                    .orderBy("task_startDate", descending: true)
                                     .snapshots(),
                                 builder: (context, snapshot) {
                                   if (snapshot.hasError) {

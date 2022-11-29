@@ -55,7 +55,7 @@ class _MyAppState extends State<MyApp> {
             } else if (snapshot.connectionState == ConnectionState.none) {
               return const Center(child: Text("No Internet Connection"));
             } else if (snapshot.hasError) {
-              return const Center(child: Text("Something has wrong"));
+              return const Center(child: Text("Something went wrong"));
             } else if (!snapshot.hasData) {
               return const HomePage();
             }
