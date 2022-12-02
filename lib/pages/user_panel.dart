@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 
 import '../auth/auth.dart';
 import '../global/colors.dart';
+import '../global/my_data.dart';
 
 class UserPanelScreen extends StatefulWidget {
   const UserPanelScreen({super.key});
@@ -18,17 +19,37 @@ class UserPanelScreen extends StatefulWidget {
 }
 
 class _UserPanelScreenState extends State<UserPanelScreen> {
+  static String inHours = '';
+  static String inMinutes = '';
   String attendenceInTime = '';
+
+  static String outHours = '';
+  static String outMinutes = '';
   String attendenceOutTime = '';
+
   String taskStartDate = '';
   String taskEndDate = '';
-  static String dropDownValue = '';
+
+  String startDate = '';
+  String endDate = '';
+  String taskMonth = '';
+
+  String taskStartMonth = '';
+  String taskEndMonth = '';
+
   String todaysDate = '';
   bool taskSubmit = false;
   bool attSubmit = false;
   bool cond = true;
+
+  String inAmPmDropDownValue = '';
+  String outAmPmDropDownValue = '';
+
+  static String dropDownValue = '';
+
   final sKey = GlobalKey();
-  String? _selectedLocation;
+
+  // String? _selectedLocation;
 
   // Reference of Auth...
   var auth = Auth();
@@ -40,7 +61,7 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
   // initialize an index
   int _selectedIndex = 0;
 
-  static final List<String> _locations = [
+  static final List<String> dropDownList = [
     'is Completed',
     'in Progress',
   ];
@@ -114,8 +135,8 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
   @override
   void initState() {
     super.initState();
-    getCurrentTime();
-    getCurrentDate();
+    // getCurrentTime();
+    // getCurrentDate();
   }
 
   @override
@@ -272,68 +293,166 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
+                              // In Time Portion
                               SizedBox(
                                 width: MediaQuery.of(context).size.width * 0.7,
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    //Attendence in Time
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(80),
-                                        gradient: const LinearGradient(
-                                          colors: [
-                                            MyColors.peach,
-                                            Color.fromARGB(237, 192, 167, 254),
-                                            MyColors.peach,
-                                          ],
-                                          begin: Alignment.centerLeft,
-                                          end: Alignment.centerRight,
-                                        ),
+                                    // Text
+                                    const Text(
+                                      "   In Time :",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
                                       ),
-                                      width: 200,
-                                      height: 50,
-                                      child: TextButton(
-                                        onPressed: () {
-                                          getInTime();
-                                          setState(() {
-                                            attSubmit = false;
-                                            attendenceOutTime = "";
-                                          });
+                                    ),
+                                    const SizedBox(
+                                      width: 30,
+                                    ),
+                                    //Attendence in Time
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.1,
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.05,
+                                      child: DropdownButtonFormField(
+                                        key: inHoursKey,
+                                        menuMaxHeight:
+                                            MediaQuery.of(context).size.height *
+                                                0.5,
+                                        decoration: InputDecoration(
+                                            labelStyle: const TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 15,
+                                            ),
+                                            labelText: inHours.isEmpty
+                                                ? "Hours"
+                                                : inHours),
+                                        focusColor: Colors.white,
+                                        dropdownColor: MyColors.peach,
+                                        iconEnabledColor: Colors.black,
+                                        iconDisabledColor: Colors.black,
+                                        items:
+                                            hoursDropDownList.map((String val) {
+                                          return DropdownMenuItem<String>(
+                                            value: val,
+                                            child: Text(
+                                              val,
+                                              style: const TextStyle(
+                                                  color: Colors.black),
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: (val) {
+                                          setState(
+                                            () {
+                                              inHours = val!;
+                                            },
+                                          );
                                         },
-                                        child: FutureBuilder(
-                                            future: getCurrentTime(),
-                                            builder: (context, snapshot) {
-                                              if (snapshot.connectionState ==
-                                                  ConnectionState.waiting) {
-                                                return const CircularProgressIndicator(
-                                                  color: Colors.white,
-                                                );
-                                              }
-                                              if (snapshot.connectionState ==
-                                                  ConnectionState.none) {
-                                                return const Text(
-                                                    'No connection!');
-                                              }
-                                              if (snapshot.hasError) {
-                                                return const Text('Error');
-                                              }
-                                              return Text(
-                                                attendenceInTime == ''
-                                                    ? "In Time   "
-                                                    : snapshot.data!.toString(),
-                                                style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 20,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              );
-                                            }),
                                       ),
                                     ),
                                     const SizedBox(width: 20),
-                                    //Attendence out Time
+                                    // Attendence in Minutes
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.1,
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.05,
+                                      child: DropdownButtonFormField<String>(
+                                        menuMaxHeight:
+                                            MediaQuery.of(context).size.height *
+                                                0.5,
+                                        decoration: InputDecoration(
+                                          labelStyle: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 15,
+                                          ),
+                                          labelText: inMinutes.isEmpty
+                                              ? "Minutes"
+                                              : inMinutes,
+                                        ),
+                                        key: inMinutesKey,
+                                        focusColor: Colors.white,
+                                        dropdownColor: MyColors.peach,
+                                        iconEnabledColor: Colors.black,
+                                        iconDisabledColor: Colors.black,
+                                        icon: const Icon(Icons.arrow_drop_down),
+                                        items: minutesDropDownList
+                                            .map((String val) {
+                                          return DropdownMenuItem<String>(
+                                            value: val,
+                                            child: Text(
+                                              val,
+                                              style: const TextStyle(
+                                                  color: Colors.black),
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: (val) {
+                                          setState(
+                                            () {
+                                              inMinutes = val!;
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 20),
+                                    // set am and pm
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.1,
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.05,
+                                      child: DropdownButtonFormField<String>(
+                                        menuMaxHeight:
+                                            MediaQuery.of(context).size.height *
+                                                0.5,
+                                        decoration: InputDecoration(
+                                          labelStyle: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 15,
+                                          ),
+                                          labelText: inAmPmDropDownValue.isEmpty
+                                              ? "AM / PM"
+                                              : inAmPmDropDownValue,
+                                        ),
+                                        key: inAMPmKey,
+                                        focusColor: Colors.white,
+                                        dropdownColor: MyColors.peach,
+                                        iconEnabledColor: Colors.black,
+                                        iconDisabledColor: Colors.black,
+                                        icon: const Icon(Icons.arrow_drop_down),
+                                        items: amPmList.map((String val) {
+                                          return DropdownMenuItem<String>(
+                                            value: val,
+                                            child: Text(
+                                              val,
+                                              style: const TextStyle(
+                                                  color: Colors.black),
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: (val) {
+                                          setState(
+                                            () {
+                                              inAmPmDropDownValue = val!;
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 20),
+                                    // submit button
                                     Container(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.12,
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(80),
                                         gradient: const LinearGradient(
@@ -346,54 +465,211 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                           end: Alignment.centerRight,
                                         ),
                                       ),
-                                      width: 200,
-                                      height: 50,
                                       child: TextButton(
                                         onPressed: () {
-                                          getOutTime();
-                                          setState(() {
-                                            attSubmit = true;
-                                            attendenceInTime = "";
-                                          });
+                                          if (inHours.isEmpty ||
+                                              inMinutes.isEmpty ||
+                                              inAmPmDropDownValue.isEmpty) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                backgroundColor: Colors.red,
+                                                content: Text(
+                                                    "Please fill all the fields in Out Time"),
+                                              ),
+                                            );
+                                          } else {
+                                            setState(() {
+                                              attendenceInTime =
+                                                  "$inHours:$inMinutes $inAmPmDropDownValue";
+                                            });
+                                            // methods to update the attendence
+                                            addInTimeToFireStore();
+                                            setState(() {
+                                              inHours = "";
+                                              inMinutes = "";
+                                              inAmPmDropDownValue = "";
+                                            });
+                                          }
                                         },
-                                        child: FutureBuilder(
-                                            future: getCurrentTime(),
-                                            builder: (context, snapshot) {
-                                              if (snapshot.connectionState ==
-                                                  ConnectionState.waiting) {
-                                                return const CircularProgressIndicator(
-                                                  color: Colors.white,
-                                                );
-                                              }
-                                              if (snapshot.connectionState ==
-                                                  ConnectionState.none) {
-                                                return const Text(
-                                                    'No connection!');
-                                              }
-                                              if (snapshot.hasError) {
-                                                return const Text('Error');
-                                              }
-
-                                              return Text(
-                                                attendenceOutTime == ''
-                                                    ? "Out Time"
-                                                    : snapshot.data!.toString(),
-                                                style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 20,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              );
-                                            }),
+                                        style:
+                                            TextButton.styleFrom(elevation: 10),
+                                        child: const FittedBox(
+                                          child: Text(
+                                            "Submit in Time",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-
-                              //submit button
-                              attSubmit == false
-                                  ? Container(
+                              // Out Time Portion
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.7,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    const Text(
+                                      "Out Time :",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 30,
+                                    ),
+                                    // Attendence out Hours
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.1,
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.05,
+                                      child: DropdownButtonFormField<String>(
+                                        menuMaxHeight:
+                                            MediaQuery.of(context).size.height *
+                                                0.5,
+                                        decoration: InputDecoration(
+                                          labelStyle: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 15,
+                                          ),
+                                          labelText: outHours.isEmpty
+                                              ? "Hours"
+                                              : outHours,
+                                        ),
+                                        key: outHoursKey,
+                                        focusColor: Colors.white,
+                                        dropdownColor: MyColors.peach,
+                                        iconEnabledColor: Colors.black,
+                                        iconDisabledColor: Colors.black,
+                                        icon: const Icon(Icons.arrow_drop_down),
+                                        items:
+                                            hoursDropDownList.map((String val) {
+                                          return DropdownMenuItem<String>(
+                                            value: val,
+                                            child: Text(
+                                              val,
+                                              style: const TextStyle(
+                                                  color: Colors.black),
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: (val) {
+                                          setState(
+                                            () {
+                                              outHours = val!;
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 20),
+                                    // Attendence out Minutes
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.1,
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.05,
+                                      child: DropdownButtonFormField<String>(
+                                        menuMaxHeight:
+                                            MediaQuery.of(context).size.height *
+                                                0.5,
+                                        decoration: InputDecoration(
+                                          labelStyle: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 15,
+                                          ),
+                                          labelText: outMinutes.isEmpty
+                                              ? "Minutes"
+                                              : outMinutes,
+                                        ),
+                                        key: outMinutesKey,
+                                        focusColor: Colors.white,
+                                        dropdownColor: MyColors.peach,
+                                        iconEnabledColor: Colors.black,
+                                        iconDisabledColor: Colors.black,
+                                        icon: const Icon(Icons.arrow_drop_down),
+                                        items: minutesDropDownList
+                                            .map((String val) {
+                                          return DropdownMenuItem<String>(
+                                            value: val,
+                                            child: Text(
+                                              val,
+                                              style: const TextStyle(
+                                                  color: Colors.black),
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: (val) {
+                                          setState(
+                                            () {
+                                              outMinutes = val!;
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 20),
+                                    // Attendence out AmPm
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.1,
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.05,
+                                      child: DropdownButtonFormField<String>(
+                                        menuMaxHeight:
+                                            MediaQuery.of(context).size.height *
+                                                0.5,
+                                        decoration: InputDecoration(
+                                          labelStyle: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 15,
+                                          ),
+                                          labelText:
+                                              outAmPmDropDownValue.isEmpty
+                                                  ? "AM / PM"
+                                                  : outAmPmDropDownValue,
+                                        ),
+                                        key: outAMPmKey,
+                                        focusColor: Colors.white,
+                                        dropdownColor: MyColors.peach,
+                                        iconEnabledColor: Colors.black,
+                                        iconDisabledColor: Colors.black,
+                                        icon: const Icon(Icons.arrow_drop_down),
+                                        items: amPmList.map((String val) {
+                                          return DropdownMenuItem<String>(
+                                            value: val,
+                                            child: Text(
+                                              val,
+                                              style: const TextStyle(
+                                                  color: Colors.black),
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: (val) {
+                                          setState(
+                                            () {
+                                              outAmPmDropDownValue = val!;
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 20),
+                                    // Submit Out Time Button
+                                    Container(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.12,
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(80),
                                         gradient: const LinearGradient(
@@ -406,59 +682,49 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                           end: Alignment.centerRight,
                                         ),
                                       ),
-                                      width: 420,
-                                      height: 50,
-                                      margin: const EdgeInsets.only(top: 10),
                                       child: TextButton(
                                         onPressed: () {
-                                          addInTimeToFireStore();
-                                          setState(() {
-                                            attendenceInTime = '';
-                                            attendenceOutTime = '';
-                                          });
+                                          if (outHours.isEmpty ||
+                                              outMinutes.isEmpty ||
+                                              outAmPmDropDownValue.isEmpty) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                backgroundColor: Colors.red,
+                                                content: Text(
+                                                    "Please fill all the fields in Out Time"),
+                                              ),
+                                            );
+                                          } else {
+                                            setState(() {
+                                              attendenceOutTime =
+                                                  "$outHours:$outMinutes $outAmPmDropDownValue";
+                                            });
+                                            // here the mehtod to submit the out time
+                                            addOutTimeToFireStore();
+                                            setState(() {
+                                              outHours = "";
+                                              outMinutes = "";
+                                              outAmPmDropDownValue = "";
+                                            });
+                                          }
                                         },
-                                        child: const Text(
-                                          "Submit In-Time",
-                                          style: TextStyle(
+                                        style:
+                                            TextButton.styleFrom(elevation: 10),
+                                        child: const FittedBox(
+                                          child: Text(
+                                            "Submit out Time",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
                                               color: Colors.white,
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                    )
-                                  : Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(80),
-                                        gradient: const LinearGradient(
-                                          colors: [
-                                            MyColors.peach,
-                                            Color.fromARGB(237, 192, 167, 254),
-                                            MyColors.peach,
-                                          ],
-                                          begin: Alignment.centerLeft,
-                                          end: Alignment.centerRight,
-                                        ),
-                                      ),
-                                      width: 420,
-                                      height: 50,
-                                      margin: const EdgeInsets.only(top: 10),
-                                      child: TextButton(
-                                        onPressed: () {
-                                          addOutTimeToFireStore();
-                                          setState(() {
-                                            attendenceInTime = '';
-                                            attendenceOutTime = '';
-                                          });
-                                        },
-                                        child: const Text(
-                                          "Submit Out-Time",
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -472,7 +738,7 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                         Column(
                           children: [
                             Container(
-                              height: MediaQuery.of(context).size.height * 0.6,
+                              height: MediaQuery.of(context).size.height * 0.65,
                               padding: const EdgeInsets.all(5),
                               margin: const EdgeInsets.all(5),
                               decoration: BoxDecoration(
@@ -657,207 +923,364 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              // Task Starting Date...
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
+                                  // Task Starting Date...
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(80),
-                                          gradient: const LinearGradient(
-                                            colors: [
-                                              MyColors.peach,
-                                              Color.fromARGB(
-                                                  237, 192, 167, 254),
-                                              MyColors.peach,
-                                            ],
-                                            begin: Alignment.centerLeft,
-                                            end: Alignment.centerRight,
-                                          ),
-                                        ),
-                                        height: 50,
-                                        width: 200,
-                                        child: TextButton(
-                                          onPressed: () {
-                                            getStartDate();
-                                            setState(() {
-                                              taskEndDate = "";
-                                              taskSubmit = false;
-                                            });
-                                          },
-                                          child: FutureBuilder(
-                                              future: getCurrentDate(),
-                                              builder: (context, snapshot) {
-                                                if (snapshot.connectionState ==
-                                                    ConnectionState.waiting) {
-                                                  return const CircularProgressIndicator(
-                                                    color: Colors.white,
-                                                  );
-                                                }
-                                                if (snapshot.connectionState ==
-                                                    ConnectionState.none) {
-                                                  return const Text(
-                                                      'No connection!');
-                                                }
-                                                if (snapshot.hasError) {
-                                                  return const Text('Error');
-                                                }
-                                                return Text(
-                                                  taskStartDate == ''
-                                                      ? "Starting Date"
-                                                      : taskStartDate,
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                );
-                                              }),
+                                      // Text for Start Time
+                                      const Text(
+                                        "Task Start Date :",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
                                         ),
                                       ),
-                                      const SizedBox(width: 20),
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(80),
-                                          gradient: const LinearGradient(
-                                            colors: [
-                                              MyColors.peach,
-                                              Color.fromARGB(
-                                                  237, 192, 167, 254),
-                                              MyColors.peach,
-                                            ],
-                                            begin: Alignment.centerLeft,
-                                            end: Alignment.centerRight,
+                                      const SizedBox(
+                                        width: 30,
+                                      ),
+                                      // Months dropdown
+                                      SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.1,
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.05,
+                                        child: DropdownButtonFormField<String>(
+                                          menuMaxHeight: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.5,
+                                          decoration: InputDecoration(
+                                            labelStyle: const TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 15,
+                                            ),
+                                            labelText: taskStartMonth == ""
+                                                ? "Month"
+                                                : taskStartMonth,
                                           ),
-                                        ),
-                                        height: 50,
-                                        width: 200,
-                                        child: TextButton(
-                                          onPressed: () {
-                                            getEndDate();
+                                          key: taskStartMonthsKey,
+                                          focusColor: Colors.white,
+                                          dropdownColor: MyColors.peach,
+                                          iconEnabledColor: Colors.black,
+                                          iconDisabledColor: Colors.black,
+                                          icon:
+                                              const Icon(Icons.arrow_drop_down),
+                                          items: monthsList.map((String val) {
+                                            return DropdownMenuItem<String>(
+                                              value: val,
+                                              child: Text(
+                                                val,
+                                                style: const TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                            );
+                                          }).toList(),
+                                          onChanged: (val) {
                                             setState(
                                               () {
-                                                taskStartDate = '';
-                                                taskSubmit = true;
+                                                taskStartMonth = val!;
                                               },
                                             );
                                           },
-                                          child: FutureBuilder(
-                                              future: getCurrentDate(),
-                                              builder: (context, snapshot) {
-                                                if (snapshot.connectionState ==
-                                                    ConnectionState.waiting) {
-                                                  return const CircularProgressIndicator(
-                                                    color: Colors.white,
-                                                  );
-                                                }
-                                                if (snapshot.connectionState ==
-                                                    ConnectionState.none) {
-                                                  return const Text(
-                                                      'No connection!');
-                                                }
-                                                if (snapshot.hasError) {
-                                                  return const Text('Error');
-                                                }
-                                                return Text(
-                                                  taskEndDate == ""
-                                                      ? "Ending Date"
-                                                      : taskEndDate,
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 20),
+                                      // dates drop down
+                                      SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.1,
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.05,
+                                        child: DropdownButtonFormField<String>(
+                                          menuMaxHeight: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.5,
+                                          decoration: InputDecoration(
+                                            labelStyle: const TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 15,
+                                            ),
+                                            labelText: startDate == ""
+                                                ? "Date"
+                                                : startDate,
+                                          ),
+                                          key: taskStartDateKey,
+                                          focusColor: Colors.white,
+                                          dropdownColor: MyColors.peach,
+                                          iconEnabledColor: Colors.black,
+                                          iconDisabledColor: Colors.black,
+                                          icon:
+                                              const Icon(Icons.arrow_drop_down),
+                                          items: datesDropDownList
+                                              .map((String val) {
+                                            return DropdownMenuItem<String>(
+                                              value: val,
+                                              child: Text(
+                                                val,
+                                                style: const TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                            );
+                                          }).toList(),
+                                          onChanged: (val) {
+                                            setState(
+                                              () {
+                                                startDate = val!;
+                                              },
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 20),
+                                      // submit button for start date
+                                      Container(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.12,
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(80),
+                                          gradient: const LinearGradient(
+                                            colors: [
+                                              MyColors.peach,
+                                              Color.fromARGB(
+                                                  237, 192, 167, 254),
+                                              MyColors.peach,
+                                            ],
+                                            begin: Alignment.centerLeft,
+                                            end: Alignment.centerRight,
+                                          ),
+                                        ),
+                                        child: TextButton(
+                                          onPressed: () {
+                                            if (taskStartMonth == "" ||
+                                                startDate == "") {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    "Please select a date",
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                    ),
                                                   ),
-                                                );
-                                              }),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                            } else {
+                                              setState(() {
+                                                taskStartDate =
+                                                    "$taskStartMonth $startDate";
+                                              });
+                                              addTaskToFireStore();
+                                              setState(() {
+                                                taskStartMonth = "";
+                                                startDate = "";
+                                              });
+                                            }
+                                          },
+                                          style: TextButton.styleFrom(
+                                              elevation: 10),
+                                          child: const FittedBox(
+                                            child: Text(
+                                              "Submit Start Date",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
-
-                                  //submit button
-                                  const SizedBox(width: 50),
-                                  taskSubmit == false
-                                      ? Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(80),
-                                            gradient: const LinearGradient(
-                                              colors: [
-                                                MyColors.peach,
-                                                Color.fromARGB(
-                                                    237, 192, 167, 254),
-                                                MyColors.peach,
-                                              ],
-                                              begin: Alignment.centerLeft,
-                                              end: Alignment.centerRight,
+                                  // Task Ending Date...
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      // Text for Start Time
+                                      const Text(
+                                        "   Task End Date :",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 30,
+                                      ),
+                                      // Months dropdown
+                                      SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.1,
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.05,
+                                        child: DropdownButtonFormField<String>(
+                                          menuMaxHeight: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.5,
+                                          decoration: InputDecoration(
+                                            labelStyle: const TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 15,
                                             ),
+                                            labelText: taskEndMonth.isEmpty
+                                                ? "Month"
+                                                : taskEndMonth,
                                           ),
-                                          width: 420,
-                                          height: 50,
-                                          margin:
-                                              const EdgeInsets.only(top: 10),
-                                          child: TextButton(
-                                            onPressed: () {
+                                          key: taskEndMonthsKey,
+                                          focusColor: Colors.white,
+                                          dropdownColor: MyColors.peach,
+                                          iconEnabledColor: Colors.black,
+                                          iconDisabledColor: Colors.black,
+                                          icon:
+                                              const Icon(Icons.arrow_drop_down),
+                                          items: monthsList.map((String val) {
+                                            return DropdownMenuItem<String>(
+                                              value: val,
+                                              child: Text(
+                                                val,
+                                                style: const TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                            );
+                                          }).toList(),
+                                          onChanged: (val) {
+                                            setState(
+                                              () {
+                                                taskEndMonth = val!;
+                                              },
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 20),
+                                      // dates drop down
+                                      SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.1,
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.05,
+                                        child: DropdownButtonFormField<String>(
+                                          menuMaxHeight: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.5,
+                                          decoration: InputDecoration(
+                                            labelStyle: const TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 15,
+                                            ),
+                                            labelText: endDate.isEmpty
+                                                ? "Date"
+                                                : endDate,
+                                          ),
+                                          key: taskEndDateKey,
+                                          focusColor: Colors.white,
+                                          dropdownColor: MyColors.peach,
+                                          iconEnabledColor: Colors.black,
+                                          iconDisabledColor: Colors.black,
+                                          icon:
+                                              const Icon(Icons.arrow_drop_down),
+                                          items: datesDropDownList
+                                              .map((String val) {
+                                            return DropdownMenuItem<String>(
+                                              value: val,
+                                              child: Text(
+                                                val,
+                                                style: const TextStyle(
+                                                    color: Colors.black),
+                                              ),
+                                            );
+                                          }).toList(),
+                                          onChanged: (val) {
+                                            setState(
+                                              () {
+                                                endDate = val!;
+                                              },
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 20),
+                                      // Submit Button for End Date
+                                      Container(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.12,
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(80),
+                                          gradient: const LinearGradient(
+                                            colors: [
+                                              MyColors.peach,
+                                              Color.fromARGB(
+                                                  237, 192, 167, 254),
+                                              MyColors.peach,
+                                            ],
+                                            begin: Alignment.centerLeft,
+                                            end: Alignment.centerRight,
+                                          ),
+                                        ),
+                                        child: TextButton(
+                                          onPressed: () {
+                                            if (taskEndMonth == "" ||
+                                                endDate == "") {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    "Please select a date",
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                            } else {
                                               setState(() {
-                                                addTaskToFireStore();
-                                                taskSubmit = true;
-                                                taskStartDate = '';
-                                                taskEndDate = '';
+                                                taskEndDate =
+                                                    "$taskEndMonth $endDate";
                                               });
-                                            },
-                                            child: const Text(
-                                              "Submit Start Date",
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                          ),
-                                        )
-                                      : Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(80),
-                                            gradient: const LinearGradient(
-                                              colors: [
-                                                MyColors.peach,
-                                                Color.fromARGB(
-                                                    237, 192, 167, 254),
-                                                MyColors.peach,
-                                              ],
-                                              begin: Alignment.centerLeft,
-                                              end: Alignment.centerRight,
-                                            ),
-                                          ),
-                                          width: 420,
-                                          height: 50,
-                                          margin:
-                                              const EdgeInsets.only(top: 10),
-                                          child: TextButton(
-                                            onPressed: () {
+                                              updateTaskToFireStore();
                                               setState(() {
-                                                updateTaskToFireStore();
-                                                taskSubmit = false;
-                                                taskStartDate = '';
-                                                taskEndDate = '';
+                                                taskEndMonth = "";
+                                                endDate = "";
                                               });
-                                            },
-                                            child: const Text(
+                                            }
+                                          },
+                                          style: TextButton.styleFrom(
+                                              elevation: 10),
+                                          child: const FittedBox(
+                                            child: Text(
                                               "Submit End Date",
                                               style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold),
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
                                             ),
                                           ),
                                         ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ],
@@ -877,7 +1300,7 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                               children: const <Widget>[],
                             ),
                             Container(
-                              height: MediaQuery.of(context).size.height * 0.6,
+                              height: MediaQuery.of(context).size.height * 0.65,
                               padding: const EdgeInsets.all(5),
                               margin: const EdgeInsets.all(5),
                               decoration: BoxDecoration(
@@ -1070,21 +1493,32 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
                                                           Colors.white,
                                                       iconDisabledColor:
                                                           Colors.white,
-                                                      hint: dropDownValue
-                                                              .isEmpty
-                                                          ? const Text(
-                                                              "Task Status",
-                                                              style: TextStyle(
-                                                                  color: Colors
-                                                                      .white),
-                                                            )
-                                                          : Text(dropDownValue),
-                                                      items: _locations
+                                                      hint:
+                                                          dropDownValue.isEmpty
+                                                              ? const Text(
+                                                                  "Task Status",
+                                                                  style: TextStyle(
+                                                                      color: Colors
+                                                                          .white),
+                                                                )
+                                                              : Text(
+                                                                  dropDownValue,
+                                                                  style: const TextStyle(
+                                                                      color: Colors
+                                                                          .white),
+                                                                ),
+                                                      items: dropDownList
                                                           .map((String val) {
                                                         return DropdownMenuItem<
                                                             String>(
                                                           value: val,
-                                                          child: Text(val),
+                                                          child: Text(
+                                                            val,
+                                                            style:
+                                                                const TextStyle(
+                                                                    color: Colors
+                                                                        .white),
+                                                          ),
                                                         );
                                                       }).toList(),
                                                       onChanged: (val) {
@@ -1159,44 +1593,49 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
     );
   }
 
-  Future getInTime() async {
+  Future<String> getInTime() async {
     setState(
       () {
         attendenceInTime = time!;
       },
     );
+    return attendenceInTime;
   }
 
-  Future getStartDate() async {
+  Future<String> getStartDate() async {
     setState(
       () {
         taskStartDate = date!;
       },
     );
+    return taskStartDate;
   }
 
-  Future getOutTime() async {
+  Future<String> getOutTime() async {
     setState(
       () {
         attendenceOutTime = time!;
       },
     );
+    return attendenceOutTime;
   }
 
-  Future getEndDate() async {
+  Future<String> getEndDate() async {
     setState(
       () {
         taskEndDate = date!;
       },
     );
+    return taskEndDate;
   }
 
-  Future getDate() async {
+  Future<String> getDate() async {
     setState(
       () {
         todaysDate = DateFormat.yMMMd().format(_time).toString();
       },
     );
+    return todaysDate;
   }
 
   //DateFormat.yMMMd().format(DateTime.now()).toString()

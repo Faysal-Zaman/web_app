@@ -111,7 +111,7 @@ class _SignInPageState extends State<SignInPage> {
                       onSaved: (value) {
                         passController.text = value!;
                       },
-                      textInputAction: TextInputAction.done,
+                      textInputAction: TextInputAction.next,
                       obscureText: visibility == true ? true : false,
                       decoration: InputDecoration(
                         hintText: "Password",

@@ -1,14 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:web_app/global/colors.dart';
 
 import 'pages/home_page.dart';
 import 'pages/user_panel.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await Firebase.initializeApp(
     options: const FirebaseOptions(
         apiKey: "AIzaSyDxZFhaWVnERG35jjjJbEORrFq_614liPI",
@@ -19,7 +17,7 @@ Future main() async {
         appId: "1:373285333576:web:00fe96651ddede812ac67d"),
   );
 
-  print("Hello");
+  debugPrint("Hello");
 
   runApp(
     const MyApp(),

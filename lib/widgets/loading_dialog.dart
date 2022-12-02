@@ -4,7 +4,7 @@ import 'package:web_app/widgets/progress_bar.dart';
 class LoadingDialog extends StatelessWidget {
   final String? message;
 
-  LoadingDialog({this.message});
+  const LoadingDialog({super.key, this.message});
 
   @override
   Widget build(BuildContext context) {
