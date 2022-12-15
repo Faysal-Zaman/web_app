@@ -26,6 +26,8 @@ dependencies:
   #for responsive scaffold
   responsive_scaffold_nullsafe: ^1.0.1 
   http: ^0.13.5 
+  dart_date: ^1.1.1
+  top_snackbar_flutter: ^3.0.0
   
 
 

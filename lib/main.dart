@@ -7,6 +7,7 @@ import 'pages/user_panel.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
     options: const FirebaseOptions(
         apiKey: "AIzaSyDxZFhaWVnERG35jjjJbEORrFq_614liPI",
@@ -19,9 +20,7 @@ Future main() async {
 
   debugPrint("Hello");
 
-  runApp(
-    const MyApp(),
-  );
+  runApp(const MyApp());
 } // main
 
 final navigatorKey = GlobalKey<NavigatorState>();

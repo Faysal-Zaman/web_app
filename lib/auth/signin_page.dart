@@ -30,19 +30,9 @@ class _SignInPageState extends State<SignInPage> {
       child: SizedBox(
         height: MediaQuery.of(context).size.height * 1,
         child: Scaffold(
+          backgroundColor: Colors.white,
           body: Container(
             alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color.fromARGB(255, 189, 192, 194),
-                  Color.fromARGB(255, 105, 130, 150),
-                  Color.fromARGB(255, 183, 187, 191),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-            ),
             child: Form(
               key: formKey,
               child: Column(
@@ -57,7 +47,7 @@ class _SignInPageState extends State<SignInPage> {
                   const Text(
                     "Login",
                     style: TextStyle(
-                      color: Colors.white,
+                      color: MyColors.peach,
                       fontSize: 50,
                       fontWeight: FontWeight.bold,
                     ),
@@ -181,7 +171,7 @@ class _SignInPageState extends State<SignInPage> {
                         child: const Text(
                           "Sign Up",
                           style: TextStyle(
-                              color: Colors.white,
+                              color: MyColors.peach,
                               fontSize: 20,
                               fontWeight: FontWeight.bold),
                         ),
