@@ -91,7 +91,7 @@ class _TaskSystemState extends State<TaskSystem> {
                                 color: Colors.black,
                                 fontSize: 15,
                               ),
-                              labelText: taskStartMonth == ""
+                              hintText: taskStartMonth == ""
                                   ? "Month"
                                   : taskStartMonth,
                             ),
@@ -132,7 +132,7 @@ class _TaskSystemState extends State<TaskSystem> {
                                 color: Colors.black,
                                 fontSize: 15,
                               ),
-                              labelText: startDate == "" ? "Date" : startDate,
+                              hintText: startDate == "" ? "Date" : startDate,
                             ),
                             key: taskStartDateKey,
                             focusColor: Colors.white,
@@ -241,7 +241,7 @@ class _TaskSystemState extends State<TaskSystem> {
                                 color: Colors.black,
                                 fontSize: 15,
                               ),
-                              labelText:
+                              hintText:
                                   taskEndMonth.isEmpty ? "Month" : taskEndMonth,
                             ),
                             key: taskEndMonthsKey,
@@ -281,7 +281,7 @@ class _TaskSystemState extends State<TaskSystem> {
                                 color: Colors.black,
                                 fontSize: 15,
                               ),
-                              labelText: endDate.isEmpty ? "Date" : endDate,
+                              hintText: endDate.isEmpty ? "Date" : endDate,
                             ),
                             key: taskEndDateKey,
                             focusColor: Colors.white,
@@ -385,7 +385,7 @@ class _TaskSystemState extends State<TaskSystem> {
                 padding: const EdgeInsets.all(5),
                 margin: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color.fromRGBO(255, 255, 255, 1),
                   border: Border.all(),
                 ),
                 child: StreamBuilder(
@@ -436,7 +436,7 @@ class _TaskSystemState extends State<TaskSystem> {
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
+                              children: <Widget>[
                                 Column(
                                   children: [
                                     const Text(
@@ -457,7 +457,7 @@ class _TaskSystemState extends State<TaskSystem> {
                                   ],
                                 ),
                                 Column(
-                                  children: [
+                                  children: <Widget>[
                                     const Text(
                                       "Task-Name",
                                       style: TextStyle(
@@ -661,7 +661,7 @@ class _TaskSystemState extends State<TaskSystem> {
       'email': userInfo.email.toString(),
       'date': DateFormat.yMMMd().format(DateTime.now()).toString(),
       'task_name': "🤔",
-      'task_progress': "🤔",
+      'task_progress': "Pending",
       'task_startDate': taskStartDate,
       'task_endDate': taskEndDate,
     };
