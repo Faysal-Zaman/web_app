@@ -81,7 +81,7 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                                 color: Colors.black,
                                 fontSize: 15,
                               ),
-                              labelText: inHours.isEmpty ? "Hours" : inHours),
+                              hintText: inHours.isEmpty ? "Hours" : inHours),
                           focusColor: Colors.white,
                           dropdownColor: MyColors.peach,
                           iconEnabledColor: Colors.black,
@@ -117,8 +117,7 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                               color: Colors.black,
                               fontSize: 15,
                             ),
-                            labelText:
-                                inMinutes.isEmpty ? "Minutes" : inMinutes,
+                            hintText: inMinutes.isEmpty ? "Minutes" : inMinutes,
                           ),
                           key: inMinutesKey,
                           focusColor: Colors.white,
@@ -157,7 +156,7 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                               color: Colors.black,
                               fontSize: 15,
                             ),
-                            labelText: inAmPmDropDownValue.isEmpty
+                            hintText: inAmPmDropDownValue.isEmpty
                                 ? "AM / PM"
                                 : inAmPmDropDownValue,
                           ),
@@ -167,15 +166,17 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                           iconEnabledColor: Colors.black,
                           iconDisabledColor: Colors.black,
                           icon: const Icon(Icons.arrow_drop_down),
-                          items: amPmList.map((String val) {
-                            return DropdownMenuItem<String>(
-                              value: val,
-                              child: Text(
-                                val,
-                                style: const TextStyle(color: Colors.black),
-                              ),
-                            );
-                          }).toList(),
+                          items: amPmList.map(
+                            (String val) {
+                              return DropdownMenuItem<String>(
+                                value: val,
+                                child: Text(
+                                  val,
+                                  style: const TextStyle(color: Colors.black),
+                                ),
+                              );
+                            },
+                          ).toList(),
                           onChanged: (val) {
                             setState(
                               () {
@@ -229,18 +230,22 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                                   ),
                                 );
                               } else {
-                                setState(() {
-                                  attendenceInTime =
-                                      "$inHours:$inMinutes $inAmPmDropDownValue";
-                                });
-                                // methods to update the attendence
+                                setState(
+                                  () {
+                                    attendenceInTime =
+                                        "$inHours:$inMinutes $inAmPmDropDownValue";
+                                  },
+                                );
 
+                                // methods to update the attendence
                                 addInTimeToFireStore();
-                                setState(() {
-                                  inHours = "";
-                                  inMinutes = "";
-                                  inAmPmDropDownValue = "";
-                                });
+                                setState(
+                                  () {
+                                    inHours = "";
+                                    inMinutes = "";
+                                    inAmPmDropDownValue = "";
+                                  },
+                                );
                               }
                             }
                           },
@@ -288,7 +293,7 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                               color: Colors.black,
                               fontSize: 15,
                             ),
-                            labelText: outHours.isEmpty ? "Hours" : outHours,
+                            hintText: outHours.isEmpty ? "Hours" : outHours,
                           ),
                           key: outHoursKey,
                           focusColor: Colors.white,
@@ -296,15 +301,17 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                           iconEnabledColor: Colors.black,
                           iconDisabledColor: Colors.black,
                           icon: const Icon(Icons.arrow_drop_down),
-                          items: hoursDropDownList.map((String val) {
-                            return DropdownMenuItem<String>(
-                              value: val,
-                              child: Text(
-                                val,
-                                style: const TextStyle(color: Colors.black),
-                              ),
-                            );
-                          }).toList(),
+                          items: hoursDropDownList.map(
+                            (String val) {
+                              return DropdownMenuItem<String>(
+                                value: val,
+                                child: Text(
+                                  val,
+                                  style: const TextStyle(color: Colors.black),
+                                ),
+                              );
+                            },
+                          ).toList(),
                           onChanged: (val) {
                             setState(
                               () {
@@ -327,7 +334,7 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                               color: Colors.black,
                               fontSize: 15,
                             ),
-                            labelText:
+                            hintText:
                                 outMinutes.isEmpty ? "Minutes" : outMinutes,
                           ),
                           key: outMinutesKey,
@@ -367,7 +374,7 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                               color: Colors.black,
                               fontSize: 15,
                             ),
-                            labelText: outAmPmDropDownValue.isEmpty
+                            hintText: outAmPmDropDownValue.isEmpty
                                 ? "AM / PM"
                                 : outAmPmDropDownValue,
                           ),
