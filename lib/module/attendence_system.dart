@@ -476,7 +476,7 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                 padding: const EdgeInsets.all(5),
                 margin: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: MyColors.peach,
                   border: Border.all(),
                 ),
                 child: StreamBuilder(
@@ -494,16 +494,18 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
 
                     if (!snapshot.hasData) {
                       return const Center(
-                          child: CircularProgressIndicator(
-                        color: MyColors.peach,
-                      ));
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                        ),
+                      );
                     }
 
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
-                          child: CircularProgressIndicator(
-                        color: MyColors.peach,
-                      ));
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                        ),
+                      );
                     }
 
                     return ListView.builder(
@@ -513,17 +515,7 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                           listOfWholeDates!
                               .add(snapshot.data!.docs[index]['date']);
                           return Container(
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  MyColors.peach,
-                                  Color.fromARGB(236, 144, 102, 251),
-                                  MyColors.peach,
-                                ],
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                              ),
-                            ),
+                            color: Colors.white,
                             padding: const EdgeInsets.all(8),
                             margin: const EdgeInsets.all(5),
                             child: Row(
@@ -534,7 +526,7 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                                     const Text(
                                       "Email",
                                       style: TextStyle(
-                                        color: Colors.black,
+                                        color: Colors.blueGrey,
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -543,7 +535,7 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                                       snapshot.data!.docs[index]['email'],
                                       style: const TextStyle(
                                           fontSize: 20,
-                                          color: Colors.white,
+                                          color: Colors.black,
                                           fontWeight: FontWeight.bold),
                                     ),
                                   ],
@@ -553,7 +545,7 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                                     const Text(
                                       "Date",
                                       style: TextStyle(
-                                        color: Colors.black,
+                                        color: Colors.blueGrey,
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -562,7 +554,7 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                                       snapshot.data!.docs[index]['date'],
                                       style: const TextStyle(
                                           fontSize: 20,
-                                          color: Colors.white,
+                                          color: Colors.black,
                                           fontWeight: FontWeight.bold),
                                     ),
                                   ],
@@ -572,7 +564,7 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                                     const Text(
                                       "In Time",
                                       style: TextStyle(
-                                        color: Colors.black,
+                                        color: Colors.blueGrey,
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -582,7 +574,7 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                                           ['attendence_inTime'],
                                       style: const TextStyle(
                                           fontSize: 20,
-                                          color: Colors.white,
+                                          color: Colors.black,
                                           fontWeight: FontWeight.bold),
                                     ),
                                   ],
@@ -592,7 +584,7 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                                     const Text(
                                       "Out Time",
                                       style: TextStyle(
-                                        color: Colors.black,
+                                        color: Colors.blueGrey,
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -602,7 +594,7 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                                           ['attendence_outTime'],
                                       style: const TextStyle(
                                           fontSize: 20,
-                                          color: Colors.white,
+                                          color: Colors.black,
                                           fontWeight: FontWeight.bold),
                                     ),
                                   ],
@@ -612,9 +604,10 @@ class _AttendenceSystemState extends State<AttendenceSystem> {
                           );
                         }
                         return const Center(
-                            child: CircularProgressIndicator(
-                          color: MyColors.peach,
-                        ));
+                          child: CircularProgressIndicator(
+                            color: MyColors.peach,
+                          ),
+                        );
                       },
                     );
                   },

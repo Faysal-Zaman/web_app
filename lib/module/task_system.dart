@@ -14,7 +14,23 @@ class TaskSystem extends StatefulWidget {
   State<TaskSystem> createState() => _TaskSystemState();
 }
 
+List<DropdownMenuItem<String>> _dropDownItem() {
+  List<String> itemValue = [
+    'is Completed',
+    'in Progress',
+  ];
+
+  return itemValue
+      .map((value) => DropdownMenuItem(
+            value: value,
+            child: Text(value.toString()),
+          ))
+      .toList();
+}
+
 class _TaskSystemState extends State<TaskSystem> {
+  List<String> selectedItemValue = [];
+
   String taskStartDate = '';
   String taskEndDate = '';
 
@@ -40,334 +56,18 @@ class _TaskSystemState extends State<TaskSystem> {
   var auth = Auth();
   final userInfo = FirebaseAuth.instance.currentUser!;
 
+  String comment = '';
+
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(10),
       margin: const EdgeInsets.only(left: 10),
       width: MediaQuery.of(context).size.width * 0.8,
-      height: MediaQuery.of(context).size.height * 1.0,
+      height: MediaQuery.of(context).size.height * 1,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          //Top Buttons Portion
-          Container(
-            width: MediaQuery.of(context).size.width * 0.7,
-            margin: const EdgeInsets.only(top: 10, bottom: 10),
-            padding: const EdgeInsets.all(5),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Task Starting Date...
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Text for Start Time
-                        const Text(
-                          "Task Start Date :",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 30,
-                        ),
-                        // Months dropdown
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.1,
-                          height: MediaQuery.of(context).size.height * 0.05,
-                          child: DropdownButtonFormField<String>(
-                            menuMaxHeight:
-                                MediaQuery.of(context).size.height * 0.5,
-                            decoration: InputDecoration(
-                              labelStyle: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 15,
-                              ),
-                              hintText: taskStartMonth == ""
-                                  ? "Month"
-                                  : taskStartMonth,
-                            ),
-                            key: taskStartMonthsKey,
-                            focusColor: Colors.white,
-                            dropdownColor: MyColors.peach,
-                            iconEnabledColor: Colors.black,
-                            iconDisabledColor: Colors.black,
-                            icon: const Icon(Icons.arrow_drop_down),
-                            items: monthsList.map((String val) {
-                              return DropdownMenuItem<String>(
-                                value: val,
-                                child: Text(
-                                  val,
-                                  style: const TextStyle(color: Colors.black),
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              setState(
-                                () {
-                                  taskStartMonth = val!;
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 20),
-                        // dates drop down
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.1,
-                          height: MediaQuery.of(context).size.height * 0.05,
-                          child: DropdownButtonFormField<String>(
-                            menuMaxHeight:
-                                MediaQuery.of(context).size.height * 0.5,
-                            decoration: InputDecoration(
-                              labelStyle: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 15,
-                              ),
-                              hintText: startDate == "" ? "Date" : startDate,
-                            ),
-                            key: taskStartDateKey,
-                            focusColor: Colors.white,
-                            dropdownColor: MyColors.peach,
-                            iconEnabledColor: Colors.black,
-                            iconDisabledColor: Colors.black,
-                            icon: const Icon(Icons.arrow_drop_down),
-                            items: datesDropDownList.map((String val) {
-                              return DropdownMenuItem<String>(
-                                value: val,
-                                child: Text(
-                                  val,
-                                  style: const TextStyle(color: Colors.black),
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              setState(
-                                () {
-                                  startDate = val!;
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 20),
-                        // submit button for start date
-                        Container(
-                          width: MediaQuery.of(context).size.width * 0.12,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(80),
-                            gradient: const LinearGradient(
-                              colors: [
-                                MyColors.peach,
-                                Color.fromARGB(237, 192, 167, 254),
-                                MyColors.peach,
-                              ],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                          ),
-                          child: TextButton(
-                            onPressed: () {
-                              if (taskStartMonth == "" || startDate == "") {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      "Please select a date",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              } else {
-                                setState(() {
-                                  taskStartDate = "$taskStartMonth $startDate";
-                                });
-                                addTaskToFireStore();
-                                setState(() {
-                                  taskStartMonth = "";
-                                  startDate = "";
-                                });
-                              }
-                            },
-                            style: TextButton.styleFrom(elevation: 10),
-                            child: const FittedBox(
-                              child: Text(
-                                "Submit Start Date",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    // Task Ending Date...
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        // Text for Start Time
-                        const Text(
-                          "   Task End Date :",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 30,
-                        ),
-                        // Months dropdown
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.1,
-                          height: MediaQuery.of(context).size.height * 0.05,
-                          child: DropdownButtonFormField<String>(
-                            menuMaxHeight:
-                                MediaQuery.of(context).size.height * 0.5,
-                            decoration: InputDecoration(
-                              labelStyle: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 15,
-                              ),
-                              hintText:
-                                  taskEndMonth.isEmpty ? "Month" : taskEndMonth,
-                            ),
-                            key: taskEndMonthsKey,
-                            focusColor: Colors.white,
-                            dropdownColor: MyColors.peach,
-                            iconEnabledColor: Colors.black,
-                            iconDisabledColor: Colors.black,
-                            icon: const Icon(Icons.arrow_drop_down),
-                            items: monthsList.map((String val) {
-                              return DropdownMenuItem<String>(
-                                value: val,
-                                child: Text(
-                                  val,
-                                  style: const TextStyle(color: Colors.black),
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              setState(
-                                () {
-                                  taskEndMonth = val!;
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 20),
-                        // dates drop down
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.1,
-                          height: MediaQuery.of(context).size.height * 0.05,
-                          child: DropdownButtonFormField<String>(
-                            menuMaxHeight:
-                                MediaQuery.of(context).size.height * 0.5,
-                            decoration: InputDecoration(
-                              labelStyle: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 15,
-                              ),
-                              hintText: endDate.isEmpty ? "Date" : endDate,
-                            ),
-                            key: taskEndDateKey,
-                            focusColor: Colors.white,
-                            dropdownColor: MyColors.peach,
-                            iconEnabledColor: Colors.black,
-                            iconDisabledColor: Colors.black,
-                            icon: const Icon(Icons.arrow_drop_down),
-                            items: datesDropDownList.map((String val) {
-                              return DropdownMenuItem<String>(
-                                value: val,
-                                child: Text(
-                                  val,
-                                  style: const TextStyle(color: Colors.black),
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              setState(
-                                () {
-                                  endDate = val!;
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 20),
-                        // Submit Button for End Date
-                        Container(
-                          width: MediaQuery.of(context).size.width * 0.12,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(80),
-                            gradient: const LinearGradient(
-                              colors: [
-                                MyColors.peach,
-                                Color.fromARGB(237, 192, 167, 254),
-                                MyColors.peach,
-                              ],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                          ),
-                          child: TextButton(
-                            onPressed: () {
-                              if (taskEndMonth == "" || endDate == "") {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      "Please select a date",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              } else {
-                                setState(() {
-                                  taskEndDate = "$taskEndMonth $endDate";
-                                });
-                                updateTaskToFireStore();
-                                setState(() {
-                                  taskEndMonth = "";
-                                  endDate = "";
-                                });
-                              }
-                            },
-                            style: TextButton.styleFrom(elevation: 10),
-                            child: const FittedBox(
-                              child: Text(
-                                "Submit End Date",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
           ///////////////////////////
           ///                     ///
           ///     List of Task    ///
@@ -381,11 +81,11 @@ class _TaskSystemState extends State<TaskSystem> {
                 children: const <Widget>[],
               ),
               Container(
-                height: MediaQuery.of(context).size.height * 0.65,
+                height: MediaQuery.of(context).size.height * 0.78,
                 padding: const EdgeInsets.all(5),
                 margin: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: const Color.fromRGBO(255, 255, 255, 1),
+                  color: MyColors.peach,
                   border: Border.all(),
                 ),
                 child: StreamBuilder(
@@ -404,212 +104,373 @@ class _TaskSystemState extends State<TaskSystem> {
                     if (!snapshot.hasData) {
                       return const Center(
                         child: CircularProgressIndicator(
-                          color: MyColors.peach,
+                          color: Colors.white,
                         ),
                       );
                     }
 
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
-                          child: CircularProgressIndicator(
-                        color: MyColors.peach,
-                      ));
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                        ),
+                      );
                     }
 
                     return ListView.builder(
                       itemCount: snapshot.data!.docs.length,
                       itemBuilder: (context, index) {
+                        for (int i = 0; i < 2; i++) {
+                          selectedItemValue.add(dropDownList[i]);
+                        }
                         if (snapshot.hasData) {
                           return Container(
                             padding: const EdgeInsets.all(8),
                             margin: const EdgeInsets.all(5),
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  MyColors.peach,
-                                  Color.fromARGB(236, 146, 103, 253),
-                                  MyColors.peach,
-                                ],
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            color: Colors.white,
+                            child: Column(
                               children: <Widget>[
-                                Column(
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
                                   children: [
                                     const Text(
-                                      "Email",
+                                      "Task Name",
                                       style: TextStyle(
-                                        color: Colors.black,
+                                        color: Colors.blueGrey,
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    Text(
-                                      snapshot.data!.docs[index]['email'],
-                                      style: const TextStyle(
-                                          fontSize: 20,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold),
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.6,
+                                      child: Text(
+                                        snapshot.data!.docs[index]['task_name'],
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold),
+                                      ),
                                     ),
                                   ],
                                 ),
-                                Column(
+                                const Divider(
+                                  color: Colors.blueGrey,
+                                  thickness: 1,
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
                                   children: <Widget>[
                                     const Text(
-                                      "Task-Name",
+                                      "Comments",
                                       style: TextStyle(
-                                        color: Colors.black,
+                                        color: Colors.blueGrey,
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    Text(
-                                      snapshot.data!.docs[index]['task_name'],
-                                      style: const TextStyle(
-                                          fontSize: 20,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold),
+                                    Container(
+                                      alignment: Alignment.centerLeft,
+                                      width: MediaQuery.of(context).size.width *
+                                          0.6,
+                                      child: snapshot.data!.docs[index]
+                                                  ['task_comments'] ==
+                                              ""
+                                          ? TextButton.icon(
+                                              onPressed: () {
+                                                // show dialog box to add comment
+                                                TextEditingController comment =
+                                                    TextEditingController();
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return AlertDialog(
+                                                      title: const Text(
+                                                        "Add Comment",
+                                                        style: TextStyle(
+                                                            fontSize: 20,
+                                                            color: Colors.black,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                      content: TextField(
+                                                        controller: comment,
+                                                        onChanged: (value) {
+                                                          this.comment = value;
+                                                        },
+                                                        decoration:
+                                                            const InputDecoration(
+                                                          hintText:
+                                                              "Enter Comment",
+                                                        ),
+                                                      ),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () {
+                                                            setState(() {
+                                                              this.comment =
+                                                                  comment.text
+                                                                      .trim()
+                                                                      .toString();
+                                                            });
+                                                            updateCommentsToFireStore(
+                                                                snapshot
+                                                                    .data!
+                                                                    .docs[index]
+                                                                    .id);
+                                                            Navigator.pop(
+                                                                context);
+                                                          },
+                                                          child: const Text(
+                                                            "Add",
+                                                            style: TextStyle(
+                                                                fontSize: 20,
+                                                                color: Colors
+                                                                    .black,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                        ),
+                                                        TextButton(
+                                                          onPressed: () {
+                                                            Navigator.pop(
+                                                                context);
+                                                          },
+                                                          child: const Text(
+                                                            "Cancel",
+                                                            style: TextStyle(
+                                                                fontSize: 20,
+                                                                color: Colors
+                                                                    .black,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                );
+                                              },
+                                              icon: const Icon(
+                                                Icons.add,
+                                                color: Colors.black,
+                                                size: 30,
+                                              ),
+                                              label: const Text(
+                                                "Add Comments",
+                                                style: TextStyle(
+                                                    fontSize: 20,
+                                                    color: Colors.black,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            )
+                                          : Text(
+                                              snapshot.data!.docs[index]
+                                                  ['task_comments'],
+                                              style: const TextStyle(
+                                                  fontSize: 20,
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
                                     ),
                                   ],
                                 ),
-                                Column(
-                                  children: [
+                                const Divider(
+                                  color: Colors.blueGrey,
+                                  thickness: 1,
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
                                     const Text(
-                                      "Starting Date",
+                                      "Start Date",
                                       style: TextStyle(
-                                        color: Colors.black,
+                                        color: Colors.blueGrey,
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    Text(
-                                      snapshot.data!.docs[index]
-                                          ['task_startDate'],
-                                      style: const TextStyle(
-                                          fontSize: 20,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold),
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.6,
+                                      child: Text(
+                                        snapshot.data!.docs[index]
+                                            ['task_startDate'],
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold),
+                                      ),
                                     ),
                                   ],
                                 ),
-                                Column(
-                                  children: [
+                                const Divider(
+                                  color: Colors.blueGrey,
+                                  thickness: 1,
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
                                     const Text(
-                                      "Ending Date",
+                                      "End Date",
                                       style: TextStyle(
-                                        color: Colors.black,
+                                        color: Colors.blueGrey,
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    Text(
-                                      snapshot.data!.docs[index]
-                                          ['task_endDate'],
-                                      style: const TextStyle(
-                                          fontSize: 20,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold),
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.6,
+                                      child: Text(
+                                        snapshot.data!.docs[index]
+                                            ['task_endDate'],
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold),
+                                      ),
                                     ),
                                   ],
                                 ),
-                                Column(
-                                  children: [
+                                const Divider(
+                                  color: Colors.blueGrey,
+                                  thickness: 1,
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
                                     const Text(
                                       "Progress",
                                       style: TextStyle(
-                                        color: Colors.black,
+                                        color: Colors.blueGrey,
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    Text(
-                                      snapshot.data!.docs[index]
-                                          ['task_progress'],
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold),
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.6,
+                                      child: Text(
+                                        snapshot.data!.docs[index]
+                                            ['task_progress'],
+                                        style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold),
+                                      ),
                                     ),
                                   ],
                                 ),
-                                Visibility(
-                                  visible: snapshot.data!.docs[index]['date'] ==
-                                          DateFormat.yMMMd()
-                                              .format(DateTime.now())
-                                      ? true
-                                      : false,
-                                  child: Column(
-                                    children: [
-                                      DropdownButton(
-                                        key: sKey,
-                                        focusColor: Colors.deepPurple[300],
-                                        dropdownColor: Colors.deepPurple[300],
-                                        iconEnabledColor: Colors.white,
-                                        iconDisabledColor: Colors.white,
-                                        hint: dropDownValue.isEmpty
+                                const Divider(
+                                  color: Colors.blueGrey,
+                                  thickness: 1,
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
+                                    SizedBox(
+                                      // ignore: sort_child_properties_last
+                                      child: const Text(
+                                        "Change Status",
+                                        style: TextStyle(
+                                          color: Colors.blueGrey,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      width: MediaQuery.of(context).size.width *
+                                          0.5,
+                                    ),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: Colors.black,
+                                          width: 1,
+                                        ),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: DropdownButton(
+                                        hint: selectedItemValue[index] == null
                                             ? const Text(
-                                                "Task Status",
+                                                "Select Status",
                                                 style: TextStyle(
-                                                    color: Colors.white),
+                                                    color: Colors.black,
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.bold),
                                               )
                                             : Text(
-                                                dropDownValue,
+                                                selectedItemValue[index],
                                                 style: const TextStyle(
-                                                    color: Colors.white),
+                                                    color: Colors.black,
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.bold),
                                               ),
-                                        items: dropDownList.map((String val) {
-                                          return DropdownMenuItem<String>(
-                                            value: val,
-                                            child: Text(
-                                              val,
-                                              style: const TextStyle(
-                                                  color: Colors.white),
-                                            ),
-                                          );
-                                        }).toList(),
-                                        onChanged: (val) {
+                                        value: selectedItemValue[index],
+                                        items: _dropDownItem(),
+                                        onChanged: (value) {
+                                          selectedItemValue[index] =
+                                              value.toString();
                                           setState(
                                             () {
-                                              dropDownValue = val!;
+                                              print('${index} and ${value}');
                                             },
                                           );
                                         },
+                                        menuMaxHeight:
+                                            MediaQuery.of(context).size.height *
+                                                0.3,
                                       ),
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(80),
-                                          gradient: const LinearGradient(
-                                            colors: [
-                                              MyColors.peach,
-                                              Color.fromARGB(
-                                                  237, 192, 167, 254),
-                                              MyColors.peach,
-                                            ],
-                                            begin: Alignment.centerLeft,
-                                            end: Alignment.centerRight,
-                                          ),
-                                        ),
-                                        child: TextButton(
-                                          onPressed: () {
-                                            updateProgressToFireStore();
-                                          },
-                                          style: TextButton.styleFrom(
-                                              elevation: 10),
-                                          child: const Text(
-                                            "Submit",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
-                                          ),
+                                    ),
+                                    Container(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.1,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20),
+                                        gradient: const LinearGradient(
+                                          colors: [
+                                            Color.fromARGB(237, 143, 100, 253),
+                                            Color.fromARGB(237, 192, 167, 254),
+                                            Color.fromARGB(237, 143, 100, 253),
+                                          ],
+                                          begin: Alignment.centerLeft,
+                                          end: Alignment.centerRight,
                                         ),
                                       ),
-                                    ],
-                                  ),
+                                      child: TextButton(
+                                        onPressed: () {
+                                          updateProgressToFireStore(
+                                              selectedItemValue[index],
+                                              snapshot.data!.docs[index].id);
+                                        },
+                                        style:
+                                            TextButton.styleFrom(elevation: 10),
+                                        child: const Text(
+                                          "Submit",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const Divider(
+                                  color: Colors.blueGrey,
+                                  thickness: 1,
                                 ),
                               ],
                             ),
@@ -632,24 +493,6 @@ class _TaskSystemState extends State<TaskSystem> {
     );
   }
 
-  Future<String> getStartDate() async {
-    setState(
-      () {
-        // taskStartDate = date!;
-      },
-    );
-    return taskStartDate;
-  }
-
-  Future<String> getEndDate() async {
-    setState(
-      () {
-        // taskEndDate = date!;
-      },
-    );
-    return taskEndDate;
-  }
-
   Future<void> addTaskToFireStore() async {
     final setAttendence = FirebaseFirestore.instance
         .collection("Task")
@@ -662,36 +505,51 @@ class _TaskSystemState extends State<TaskSystem> {
       'date': DateFormat.yMMMd().format(DateTime.now()).toString(),
       'task_name': "🤔",
       'task_progress': "Pending",
-      'task_startDate': taskStartDate,
-      'task_endDate': taskEndDate,
+      'task_startDate': "",
+      'task_endDate': "",
+      'task_comments': "",
     };
 
     setAttendence.set(user);
   }
 
-  Future<void> updateTaskToFireStore() async {
+  // Future<void> updateTaskToFireStore() async {
+  //   final setAttendence = FirebaseFirestore.instance
+  //       .collection("Task")
+  //       .doc(FirebaseAuth.instance.currentUser!.email)
+  //       .collection(DateFormat.MMM().format(DateTime.now()).toString())
+  //       .doc(DateFormat.d().format(DateTime.now()).toString());
+
+  //   final user = {
+  //     'task_endDate': taskEndDate,
+  //   };
+
+  //   setAttendence.update(user);
+  // }
+
+  Future<void> updateProgressToFireStore(index, indexOf) async {
     final setAttendence = FirebaseFirestore.instance
         .collection("Task")
         .doc(FirebaseAuth.instance.currentUser!.email)
         .collection(DateFormat.MMM().format(DateTime.now()).toString())
-        .doc(DateFormat.d().format(DateTime.now()).toString());
+        .doc("${indexOf}");
 
     final user = {
-      'task_endDate': taskEndDate,
+      'task_progress': index.toString(),
     };
 
     setAttendence.update(user);
   }
 
-  Future<void> updateProgressToFireStore() async {
+  Future<void> updateCommentsToFireStore(indexOf) async {
     final setAttendence = FirebaseFirestore.instance
         .collection("Task")
         .doc(FirebaseAuth.instance.currentUser!.email)
         .collection(DateFormat.MMM().format(DateTime.now()).toString())
-        .doc(DateFormat.d().format(DateTime.now()).toString());
+        .doc("${indexOf}");
 
     final user = {
-      'task_progress': dropDownValue,
+      'task_comments': comment.toString(),
     };
 
     setAttendence.update(user);

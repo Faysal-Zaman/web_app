@@ -120,7 +120,7 @@ class _UserPanelScreenState extends State<UserPanelScreen> {
     // print the listOfWholeDates here
     print("The listOfWholeDates are : " + listOfWholeDates.toString());
     return Scaffold(
-      endDrawer: const MyDrawerWidget(),
+      endDrawer: _selectedIndex == 0 ? const MyDrawerWidget() : null,
       appBar: const MyAppBarWidget(),
       body: Container(
         width: double.infinity,
